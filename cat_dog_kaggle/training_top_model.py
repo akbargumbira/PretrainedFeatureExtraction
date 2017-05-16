@@ -34,5 +34,5 @@ model.fit(
     validation_split=0.3,
     callbacks=callbacks_list,
     verbose=True)
-model.save_weights('weights-top_model_last.h5')
+model.save_weights('model/weights-top_model_last.hdf5')
 

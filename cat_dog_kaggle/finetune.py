@@ -6,7 +6,7 @@ from keras.layers import Dropout, Flatten, Dense
 from keras.callbacks import ModelCheckpoint
 from utilities import load_dataset
 
-TOP_MODEL_WEIGHTS_PATH = 'model/weights-top_model-best.h5'
+TOP_MODEL_WEIGHTS_PATH = 'model/weights-top_model-improvement-47-0.97.hdf5'
 TRAINING_ID, TRAINING_DATA, TRAINING_LABEL = load_dataset()
 
 # Build the VGG16 network and get only the bottleneck features
@@ -44,4 +44,4 @@ model.fit(
     validation_split=0.3,
     callbacks=callbacks_list,
     verbose=True)
-model.save_weights('weights-final_model_last.h5')
+model.save_weights('model/weights-final_model_last.hdf5')
