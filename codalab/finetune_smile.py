@@ -9,7 +9,7 @@ from keras.callbacks import ModelCheckpoint
 from utilities import load_dataset
 
 
-TOP_MODEL_WEIGHTS_PATH = 'model/gender/weights-top_model_last.hdf5'
+TOP_MODEL_WEIGHTS_PATH = 'model/smile/weights-top_model_last.hdf5'
 BATCH_SIZE = 128
 
 print 'Compiling the VGG network...'
@@ -45,20 +45,20 @@ model.compile(
 )
 
 print 'Loading training dataset...'
-t_id, t_data, t_gender_label, _ = load_dataset()
+t_id, t_data, _, t_smile_label = load_dataset()
 
 print 'Preprocessing training dataset...'
 t_data = preprocess_input(t_data)
 
 print 'Loading validation dataset...'
-val_id, val_data, val_gender_label, _ = load_dataset(prefix='val')
+val_id, val_data, _, val_smile_label = load_dataset(prefix='val')
 
 print 'Preprocessing validation dataset...'
 val_data = preprocess_input(val_data)
 
 print 'Training...'
 # Checkpoint
-filepath = 'model/gender/weights-final_model-improvement-{epoch:02d}-{' \
+filepath = 'model/smile/weights-final_model-improvement-{epoch:02d}-{' \
            'val_acc:.2f}.hdf5'
 checkpoint = ModelCheckpoint(
     filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
@@ -67,10 +67,10 @@ callbacks_list = [checkpoint]
 # Train the whole model now
 model.fit(
     t_data,
-    t_gender_label,
+    t_smile_label,
     epochs=5,
     batch_size=BATCH_SIZE,
-    validation_data=(val_data, val_gender_label),
+    validation_data=(val_data, val_smile_label),
     callbacks=callbacks_list,
     verbose=True)
 model.save_weights('model/gender/weights-final_model_last.hdf5')
