@@ -9,7 +9,7 @@ from keras.callbacks import ModelCheckpoint
 from utilities import load_dataset
 
 
-TOP_MODEL_WEIGHTS_PATH = 'model/weights-top_model-improvement-47-0.97.hdf5'
+TOP_MODEL_WEIGHTS_PATH = 'model/gender/weights-top_model_last.hdf5'
 BATCH_SIZE = 64
 
 print 'Compiling the VGG network...'
@@ -23,7 +23,7 @@ base_model = VGG16(
 # Add the top model layer that we have already trained
 top_model = Sequential()
 top_model.add(Flatten(input_shape=base_model.output_shape[1:]))
-top_model.add(Dense(256, activation='relu'))
+top_model.add(Dense(512, activation='relu'))
 top_model.add(Dropout(0.5))
 top_model.add(Dense(1, activation='sigmoid'))
 top_model.load_weights(TOP_MODEL_WEIGHTS_PATH)
@@ -44,26 +44,33 @@ model.compile(
     metrics=['accuracy']
 )
 
-print 'Loading dataset...'
-training_id, training_data, training_label = load_dataset()
+print 'Loading training dataset...'
+t_id, t_data, t_gender_label, _ = load_dataset()
 
-print 'Preprocessing dataset...'
-training_data = preprocess_input(training_data)
+print 'Preprocessing training dataset...'
+t_data = preprocess_input(t_data)
+
+print 'Loading validation dataset...'
+val_id, val_data, val_gender_label, _ = load_dataset(prefix='val')
+
+print 'Preprocessing validation dataset...'
+val_data = preprocess_input(val_data)
 
 print 'Training...'
 # Checkpoint
-filepath = 'model/weights-final_model-improvement-{epoch:02d}-{val_acc:.2f}.hdf5'
+filepath = 'model/gender/weights-final_model-improvement-{epoch:02d}-{' \
+           'val_acc:.2f}.hdf5'
 checkpoint = ModelCheckpoint(
     filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
 # Train the whole model now
 model.fit(
-    training_data,
-    training_label,
-    epochs=20,
+    t_data,
+    t_gender_label,
+    epochs=5,
     batch_size=BATCH_SIZE,
-    validation_split=0.3,
+    validation_data=(val_data, val_gender_label),
     callbacks=callbacks_list,
     verbose=True)
-model.save_weights('model/weights-final_model_last.hdf5')
+model.save_weights('model/gender/weights-final_model_last.hdf5')
