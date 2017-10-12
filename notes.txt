@@ -1,0 +1,50 @@
+VGG16
+
+['Easy_Close_bocce_2.jpg' 'Easy_Close_bocce_1.jpg' 'Easy_Close_bocce_3.jpg'
+
+ 'Easy_Mid_RockClimbing_14.jpg' 'Easy_Mid_RockClimbing_51.jpg' 'Easy_Mid_RockClimbing_7.jpg'
+
+ 'Easy_Close_badminton_69.jpg' 'Easy_Close_badminton_2.jpg' 'Easy_Close_badminton_45.jpg'
+
+ 'Easy_Mid_sailing_6.jpg' 'Easy_Mid_sailing_29.jpg' 'Easy_Mid_sailing_24.jpg'
+
+ 'Easy_Close_croquet_8.jpg' 'Easy_Close_croquet_72.jpg' 'Easy_Close_croquet_73.jpg'
+
+ 'Easy_Mid_snowboarding_9.jpg' 'Easy_Mid_snowboarding_2.jpg' 'Easy_Mid_snowboarding_11.jpg'
+
+ 'Easy_Close_Rowing_31.jpg' 'Easy_Close_Rowing_30.jpg' 'Easy_Close_Rowing_24.jpg'
+
+ 'Easy_Close_polo_4.jpg' 'Easy_Close_polo_2.jpg' 'Easy_Close_polo_3.jpg']
+
+('Predicted:', [
+    [(u'n03134739', u'croquet_ball', 0.52760875), (u'n03733281', u'maze', 0.35711235), (u'n02777292', u'balance_beam', 0.0097855171)],
+    [(u'n03134739', u'croquet_ball', 0.98204213), (u'n04254680', u'soccer_ball', 0.0065218522), (u'n02777292', u'balance_beam', 0.003489784)],
+    [(u'n03134739', u'croquet_ball', 0.95285028), (u'n03733281', u'maze', 0.037237808), (u'n04254680', u'soccer_ball', 0.0037895869)],
+
+    [(u'n09246464', u'cliff', 0.96925867), (u'n09193705', u'alp', 0.017127033), (u'n09468604', u'valley', 0.0019232314)],
+    [(u'n09246464', u'cliff', 0.99750262), (u'n09193705', u'alp', 0.00096868753), (u'n09468604', u'valley', 0.00051478163)],
+    [(u'n03000684', u'chain_saw', 0.17240162), (u'n01820546', u'lorikeet', 0.082422644), (u'n03134739', u'croquet_ball', 0.065449007)],
+
+    [(u'n04540053', u'volleyball', 0.51690155), (u'n04039381', u'racket', 0.24160284), (u'n04254680', u'soccer_ball', 0.095046319)],
+    [(u'n04540053', u'volleyball', 0.87399435), (u'n02802426', u'basketball', 0.070556387), (u'n03623198', u'knee_pad', 0.011987296)],
+    [(u'n03535780', u'horizontal_bar', 0.17210251), (u'n02906734', u'broom', 0.16243866), (u'n04540053', u'volleyball', 0.14026278)],
+
+    [(u'n04612504', u'yawl', 0.82850987), (u'n04147183', u'schooner', 0.084934041), (u'n09332890', u'lakeside', 0.026194992)],
+    [(u'n04612504', u'yawl', 0.6131162), (u'n02981792', u'catamaran', 0.26060346), (u'n04483307', u'trimaran', 0.098286726)],
+    [(u'n04612504', u'yawl', 0.83803749), (u'n02981792', u'catamaran', 0.063126013), (u'n04483307', u'trimaran', 0.056058232)],
+
+    [(u'n03134739', u'croquet_ball', 0.80735815), (u'n03445777', u'golf_ball', 0.037154093), (u'n04254680', u'soccer_ball', 0.022331353)],
+    [(u'n03134739', u'croquet_ball', 0.98301518), (u'n03445777', u'golf_ball', 0.0069136778), (u'n02799071', u'baseball', 0.0023173518)],
+    [(u'n03134739', u'croquet_ball', 0.84848303), (u'n04254680', u'soccer_ball', 0.07625024), (u'n03445777', u'golf_ball', 0.016535342)],
+
+    [(u'n09193705', u'alp', 0.52196991), (u'n04552348', u'warplane', 0.041752793), (u'n04592741', u'wing', 0.041377094)],
+    [(u'n04228054', u'ski', 0.6663658), (u'n04592741', u'wing', 0.11921968), (u'n04252077', u'snowmobile', 0.042074386)],
+    [(u'n03888257', u'parachute', 0.48453993), (u'n09193705', u'alp', 0.43547356), (u'n04228054', u'ski', 0.061785612)],
+
+    [(u'n02807133', u'bathing_cap', 0.43884513), (u'n04371430', u'swimming_trunks', 0.23878445), (u'n02837789', u'bikini', 0.18212111)],
+    [(u'n03873416', u'paddle', 0.76624233), (u'n02951358', u'canoe', 0.23058386), (u'n02807133', u'bathing_cap', 0.00069776032)],
+    [(u'n03873416', u'paddle', 0.79655421), (u'n02951358', u'canoe', 0.19813077), (u'n09421951', u'sandbar', 0.001574578)],
+
+    [(u'n03888257', u'parachute', 0.9833861), (u'n09835506', u'ballplayer', 0.0074888947), (u'n03379051', u'football_helmet', 0.0051142443)],
+    [(u'n03888257', u'parachute', 0.63541472), (u'n04192698', u'shield', 0.067620032), (u'n03379051', u'football_helmet', 0.039181631)],
+    [(u'n09835506', u'ballplayer', 0.41549858), (u'n02799071', u'baseball', 0.34392866), (u'n03888257', u'parachute', 0.019480713)]])

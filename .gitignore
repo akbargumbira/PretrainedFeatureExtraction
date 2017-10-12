@@ -1,27 +1,18 @@
 .idea/
 venv/
-.ipynb_checkpoints/
+code/.ipynb_checkpoints/
 *.pyc
 
 # See cat_dog_kaggle/generate_dataset.py and
 # cat_dog_kaggle/get_bottleneck_features.py to generate these data
-cat_dog_kaggle/model/bottleneck_features.npz
-cat_dog_kaggle/model/training_data.npz
-cat_dog_kaggle/model/training_id.npz
-cat_dog_kaggle/model/training_label.npz
+src/cat_dog_kaggle/model/*
 
 # See codalab/generate_dataset.py and
 # codalab/get_bottleneck_features.py to generate these data
-codalab/model/training_bottleneck_features.npz
-codalab/model/training_data.npz
-codalab/model/training_gender_label.npz
-codalab/model/training_id.npz
-codalab/model/training_smile_label.npz
+src/codalab/model/*
 
 # See codalab/generate_dataset.py and
 # codalab/get_bottleneck_features.py to generate these data
-codalab/model/val_bottleneck_features.npz
-codalab/model/val_data.npz
-codalab/model/val_gender_label.npz
-codalab/model/val_id.npz
-codalab/model/val_smile_label.npz
+src/codalab/model/*
+
+src/data/*
