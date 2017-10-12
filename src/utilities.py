@@ -4,14 +4,14 @@ import numpy as np
 from keras.preprocessing import image as keras_image
 
 UIUC_EVENT_CLASS = {
-    'badminton': 1,
-    'bocce': 2,
-    'croquet': 3,
-    'polo': 4,
-    'rowing': 5,
-    'RockClimbing': 6,
-    'sailing': 7,
-    'snowboarding': 8
+    'badminton': 0,
+    'bocce': 1,
+    'croquet': 2,
+    'polo': 3,
+    'rowing': 4,
+    'RockClimbing': 5,
+    'sailing': 6,
+    'snowboarding': 7
 }
 
 
