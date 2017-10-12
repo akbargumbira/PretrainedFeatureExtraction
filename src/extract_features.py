@@ -10,7 +10,8 @@ from src.utilities import load_dataset, data_path
 
 def generate_vgg16_bottleneck_features(output_dir, prefix='training'):
     # Load dataset
-    t_id, t_data, t_label = load_dataset('uiuc/224_224', prefix=prefix)
+    output_path = data_path(output_dir)
+    t_id, t_data, t_label = load_dataset(output_path, prefix=prefix)
 
     # Preprocess training_data
     t_data = preprocess_input(t_data)
