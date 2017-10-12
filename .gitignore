@@ -1,6 +1,6 @@
 .idea/
 venv/
-code/.ipynb_checkpoints/
+src/notebook/.ipynb_checkpoints/
 *.pyc
 
 # See cat_dog_kaggle/generate_dataset.py and
