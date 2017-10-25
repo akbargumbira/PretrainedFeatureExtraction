@@ -13,46 +13,87 @@ from src.utilities import data_path, serialize_object
 
 
 def get_model(input_shape, n_classes):
+    """Create a simple fully connected layers (2HL) to train extracted
+        ConvNet features.
+
+    :param input_shape: The shape of the input (the output of ConvNet layer).
+    :type input_shape: int
+
+    :param n_classes: The number of classes in target classification.
+    :type n_classes: int
+
+    :return:
+    """
+    assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
     model = Sequential()
     model.add(Flatten(input_shape=input_shape))
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(n_classes, activation='softmax'))
+    if n_classes > 2:
+        model.add(Dense(n_classes, activation='softmax'))
+    else:
+        model.add(Dense(1, activation='sigmoid'))
     return model
 
 
-def train(features_path, label_path, output_dir):
+def load_bottleneck_features(features_path, label_path):
     abs_features_path = data_path(features_path)
     abs_label_path = data_path(label_path)
-    abs_output_path = data_path(output_dir)
 
-    # Get the bottleneck features
+    # Get the bottleneck features and its labels
     with np.load(abs_features_path) as data:
-        training_data = data['arr_0.npy']
-
-    # Get the label
+        features = data['arr_0.npy']
     with np.load(abs_label_path) as data:
-        training_label = data['arr_0.npy']
+        label = data['arr_0.npy']
 
-    # OHE training label
+    return features, label
+
+
+def train(training_features_path, training_label_path, output_dir,
+          previous_model=None, epochs=100, initial_epoch=0,
+          val_features_path=None, val_label_path=None):
+    start_time = time.strftime("%Y%m%d-%H%M%S")
+    abs_output_path = data_path(output_dir)
+    training_data, training_label = load_bottleneck_features(
+        training_features_path, training_label_path)
+
     n_classes = len(np.unique(training_label))
-    training_label = to_categorical(training_label, n_classes)
+    assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
+    if n_classes > 2:
+        # OHE training label
+        training_label = to_categorical(training_label, n_classes)
 
-    # Split into train and validation set
-    train_data, val_data, train_label, val_label = train_test_split(
-        training_data, training_label, random_state=42, stratify=training_label)
+    if val_features_path:
+        val_data, val_label = load_bottleneck_features(
+            val_features_path, val_label_path)
+        train_data, train_label = training_data, training_label
+        if n_classes > 2:
+            val_label = to_categorical(val_label, n_classes)
+    else:
+        # Split into train and validation set
+        train_data, val_data, train_label, val_label = train_test_split(
+            training_data, training_label, random_state=42, stratify=training_label)
 
-    model = get_model(training_data.shape[1:], n_classes)
+    # Prepare the model
+    model = get_model(train_data.shape[1:], n_classes)
+    # Use saved model weights if specified
+    if previous_model:
+        model.load_weights(previous_model)
+
+    loss = 'categorical_crossentropy' if n_classes > 2 else \
+        'binary_crossentropy'
     model.compile(optimizer='rmsprop',
-                  loss='categorical_crossentropy',
+                  loss=loss,
                   metrics=['accuracy'])
 
-    # Checkpoint
+    # Prepare callbacks
+    # 1. ModelCheckpoint
     checkpoint_filepath = os.path.join(
         abs_output_path,
-        'weights-top_model-improvement-{epoch:02d}-{val_acc:.2f}.hdf5')
+        'checkpoint',
+        'weights-improvement-{epoch:03d}-{val_acc:.2f}.hdf5')
     checkpoint = ModelCheckpoint(
         checkpoint_filepath,
         monitor='val_acc',
@@ -64,43 +105,78 @@ def train(features_path, label_path, output_dir):
     history = model.fit(
         train_data,
         train_label,
-        epochs=50,
+        epochs=epochs,
+        initial_epoch=initial_epoch,
         validation_data=(val_data, val_label),
         callbacks=callbacks_list,
-        verbose=True)
+        verbose=2)
 
     # Dump the history
-    hist_file = 'hist-%s.pkl' % time.strftime("%Y%m%d-%H%M%S")
+    end_time = time.strftime("%Y%m%d-%H%M%S")
+    hist_file = 'hist_%s_%s.pkl' % (start_time, end_time)
     serialize_object(
         history.history,
         os.path.join(abs_output_path, hist_file))
     # Dump the last weights
     last_filepath = os.path.join(
         abs_output_path,
-        'weights-top_model_last.hdf5')
+        'weights-last-{epoch:03d}-{val_acc:.2f}.hdf5'.format(
+            epoch=initial_epoch+epochs,
+            val_acc=history.history['val_acc'][-1]))
     model.save_weights(last_filepath)
 
 
-# VGG16
-# train(
-#     features_path='uiuc/224_224/features_vgg16.npz',
-#     label_path='uiuc/224_224/training_label.npz',
-#     output_dir='uiuc/224_224/model/vgg16/oct12')
+# UIUC
+models = ['vgg16', 'inceptionv3', 'resnet50']
+# for model in models:
+#     print 'Training with %s....' % model
+#     train(
+#         training_features_path='uiuc/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='uiuc/224_224/training_label.npz',
+#         output_dir='uiuc/224_224/model/%s/' % model,
+#         epochs=200)
 
-# inceptionv3
+# # VGG16
 # train(
-#     features_path='uiuc/224_224/features_inceptionv3.npz',
-#     label_path='uiuc/224_224/training_label.npz',
-#     output_dir='uiuc/224_224/model/inceptionv3/oct12')
-
-# resnet50
+#     training_features_path='uiuc/224_224/features_training_vgg16.npz',
+#     training_label_path='uiuc/224_224/training_label.npz',
+#     output_dir='uiuc/224_224/model/vgg16/oct23')
+#
+# # inceptionv3
 # train(
-#     features_path='uiuc/224_224/features_resnet50.npz',
-#     label_path='uiuc/224_224/training_label.npz',
-#     output_dir='uiuc/224_224/model/resnet50/oct12')
+#     training_features_path='uiuc/224_224/features_training_inceptionv3.npz',
+#     training_label_path='uiuc/224_224/training_label.npz',
+#     output_dir='uiuc/224_224/model/inceptionv3/oct23')
+#
+# # resnet50
+# train(
+#     training_features_path='uiuc/224_224/features_training_resnet50.npz',
+#     training_label_path='uiuc/224_224/training_label.npz',
+#     output_dir='uiuc/224_224/model/resnet50/oct23')
+# --------------------------------------------------------------------
+# Codalab Smile
+for model in models:
+    print 'Training with %s....' % model
+    train(
+        training_features_path='codalab/224_224/features_training_%s.npz' %
+                               model,
+        training_label_path='codalab/224_224/training_smile_label.npz',
+        output_dir='codalab/224_224/model/%s/' % model,
+        epochs=200,
+        val_features_path='codalab/224_224/features_val_%s.npz' % model,
+        val_label_path='codalab/224_224/val_smile_label.npz'
+    )
 
-# inceptionv3 299_299
-train(
-    features_path='uiuc/299_299/features_inceptionv3.npz',
-    label_path='uiuc/299_299/training_label.npz',
-    output_dir='uiuc/299_299/model/inceptionv3/oct12')
+# Codalab Gender
+# for model in models:
+#     print 'Training with %s....' % model
+#     train(
+#         training_features_path='codalab/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='codalab/224_224/training_gender_label.npz',
+#         output_dir='codalab/224_224/model/gender/%s/' % model,
+#         epochs=200,
+#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
+#         val_label_path='codalab/224_224/val_gender_label.npz'
+#     )
