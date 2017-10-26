@@ -128,47 +128,30 @@ def train(training_features_path, training_label_path, output_dir,
 
 # UIUC
 models = ['vgg16', 'inceptionv3', 'resnet50']
-# for model in models:
-#     print 'Training with %s....' % model
-#     train(
-#         training_features_path='uiuc/224_224/features_training_%s.npz' %
-#                                model,
-#         training_label_path='uiuc/224_224/training_label.npz',
-#         output_dir='uiuc/224_224/model/%s/' % model,
-#         epochs=200)
-
-# # VGG16
-# train(
-#     training_features_path='uiuc/224_224/features_training_vgg16.npz',
-#     training_label_path='uiuc/224_224/training_label.npz',
-#     output_dir='uiuc/224_224/model/vgg16/oct23')
-#
-# # inceptionv3
-# train(
-#     training_features_path='uiuc/224_224/features_training_inceptionv3.npz',
-#     training_label_path='uiuc/224_224/training_label.npz',
-#     output_dir='uiuc/224_224/model/inceptionv3/oct23')
-#
-# # resnet50
-# train(
-#     training_features_path='uiuc/224_224/features_training_resnet50.npz',
-#     training_label_path='uiuc/224_224/training_label.npz',
-#     output_dir='uiuc/224_224/model/resnet50/oct23')
-# --------------------------------------------------------------------
-# Codalab Smile
 for model in models:
     print 'Training with %s....' % model
     train(
-        training_features_path='codalab/224_224/features_training_%s.npz' %
+        training_features_path='uiuc/224_224/features_training_%s.npz' %
                                model,
-        training_label_path='codalab/224_224/training_smile_label.npz',
-        output_dir='codalab/224_224/model/%s/' % model,
-        epochs=200,
-        val_features_path='codalab/224_224/features_val_%s.npz' % model,
-        val_label_path='codalab/224_224/val_smile_label.npz'
-    )
+        training_label_path='uiuc/224_224/training_label.npz',
+        output_dir='uiuc/224_224/model/%s/' % model,
+        epochs=200)
 
-# Codalab Gender
+# --------------------------------------------------------------------
+# Codalab Smile
+# for model in models:
+#     print 'Training with %s....' % model
+#     train(
+#         training_features_path='codalab/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='codalab/224_224/training_smile_label.npz',
+#         output_dir='codalab/224_224/model/smile/%s/' % model,
+#         epochs=200,
+#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
+#         val_label_path='codalab/224_224/val_smile_label.npz'
+#     )
+
+# # Codalab Gender
 # for model in models:
 #     print 'Training with %s....' % model
 #     train(
@@ -180,3 +163,15 @@ for model in models:
 #         val_features_path='codalab/224_224/features_val_%s.npz' % model,
 #         val_label_path='codalab/224_224/val_gender_label.npz'
 #     )
+#
+# # ----------------------------------------------------------------------
+# # Kaggle Dog and Cat
+# for model in models:
+#     print 'Training with %s....' % model
+#     train(
+#         training_features_path='kaggle_dog_cat/224_224/features_training_%s'
+#                                '.npz' % model,
+#         training_label_path='kaggle_dog_cat/224_224/training_label.npz',
+#         output_dir='kaggle_dog_cat/224_224/model/%s/' % model,
+#         epochs=200)
+

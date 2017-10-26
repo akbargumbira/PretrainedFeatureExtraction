@@ -7,3 +7,5 @@ numpy
 tensorflow
 jupyter
 matplotlib
+pydot
+graphviz
