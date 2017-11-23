@@ -3,52 +3,12 @@ import os
 import time
 
 import numpy as np
-from keras.models import Sequential
 from keras.callbacks import ModelCheckpoint
-from keras.layers import Dropout, Flatten, Dense
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 
-from src.utilities import data_path, serialize_object
-
-
-def get_model(input_shape, n_classes):
-    """Create a simple fully connected layers (2HL) to train extracted
-        ConvNet features.
-
-    :param input_shape: The shape of the input (the output of ConvNet layer).
-    :type input_shape: int
-
-    :param n_classes: The number of classes in target classification.
-    :type n_classes: int
-
-    :return:
-    """
-    assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
-    model = Sequential()
-    model.add(Flatten(input_shape=input_shape))
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
-    if n_classes > 2:
-        model.add(Dense(n_classes, activation='softmax'))
-    else:
-        model.add(Dense(1, activation='sigmoid'))
-    return model
-
-
-def load_bottleneck_features(features_path, label_path):
-    abs_features_path = data_path(features_path)
-    abs_label_path = data_path(label_path)
-
-    # Get the bottleneck features and its labels
-    with np.load(abs_features_path) as data:
-        features = data['arr_0.npy']
-    with np.load(abs_label_path) as data:
-        label = data['arr_0.npy']
-
-    return features, label
+from src.utilities import data_path, serialize_object, get_top_model, \
+    load_bottleneck_features
 
 
 def train(training_features_path, training_label_path, output_dir,
@@ -77,7 +37,7 @@ def train(training_features_path, training_label_path, output_dir,
             training_data, training_label, random_state=42, stratify=training_label)
 
     # Prepare the model
-    model = get_model(train_data.shape[1:], n_classes)
+    model = get_top_model(train_data.shape[1:], n_classes)
     # Use saved model weights if specified
     if previous_model:
         model.load_weights(previous_model)
@@ -127,15 +87,15 @@ def train(training_features_path, training_label_path, output_dir,
 
 
 # UIUC
-models = ['vgg16', 'inceptionv3', 'resnet50']
-for model in models:
-    print 'Training with %s....' % model
-    train(
-        training_features_path='uiuc/224_224/features_training_%s.npz' %
-                               model,
-        training_label_path='uiuc/224_224/training_label.npz',
-        output_dir='uiuc/224_224/model/%s/' % model,
-        epochs=200)
+# models = ['vgg16', 'inceptionv3', 'resnet50']
+# for model in models:
+#     print 'Training with %s....' % model
+#     train(
+#         training_features_path='uiuc/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='uiuc/224_224/training_label.npz',
+#         output_dir='uiuc/224_224/model/%s/' % model,
+#         epochs=200)
 
 # --------------------------------------------------------------------
 # Codalab Smile

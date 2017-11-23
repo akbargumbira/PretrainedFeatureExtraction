@@ -9,3 +9,4 @@ jupyter
 matplotlib
 pydot
 graphviz
+quiver_engine
