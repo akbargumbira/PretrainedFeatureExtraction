@@ -73,7 +73,7 @@ def generate_codalab_dataset(image_dir, target_size, output_dir,
         n_chunk = int(round(float(len(data)) / 100))
         n_chunk = 1 if n_chunk == 0 else n_chunk
         if i % n_chunk == 0:
-            print 'Procesed: %s %% of images' % (i * 100 / len(data))
+            print('Procesed: %s %% of images' % (i * 100 / len(data)))
 
         # Get the data
         image_filename = data[i][0]
@@ -103,7 +103,7 @@ def generate_codalab_dataset(image_dir, target_size, output_dir,
             image = np.expand_dims(image, axis=0)
             training_data.extend(image)
 
-    print 'Saving the training id, data and label....'
+    print('Saving the training id, data and label....')
     base_output = data_path(output_dir)
     np.savez_compressed(
         open(os.path.join(base_output, '%s_id.npz' % prefix), 'w'),
@@ -130,7 +130,7 @@ def get_kaggle_dog_cat_data(image_dir, target_size):
             n_chunk = int(round(float(n_images) / 100))
             n_chunk = 1 if n_chunk == 0 else n_chunk
             if index % n_chunk == 0:
-                print 'Procesed: %s %% of images' % (index * 100 / n_images)
+                print('Procesed: %s %% of images' % (index * 100 / n_images))
             image_path = os.path.join(root, filename)
             if os.path.exists(image_path):
                 id = np.append(id, filename)

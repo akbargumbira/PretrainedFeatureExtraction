@@ -129,7 +129,7 @@ def train(training_features_path, training_label_path, output_dir,
 # UIUC
 models = ['vgg16', 'inceptionv3', 'resnet50']
 for model in models:
-    print 'Training with %s....' % model
+    print('Training with %s....' % model)
     train(
         training_features_path='uiuc/224_224/features_training_%s.npz' %
                                model,
