@@ -4,7 +4,10 @@ import fnmatch
 import pickle
 
 import numpy as np
+from keras import applications
+from keras.models import Sequential, Model
 from keras.preprocessing import image as keras_image
+from keras.layers import Dropout, Flatten, Dense, Input
 
 DATASETS = {
     1: 'uiuc',
@@ -219,3 +222,132 @@ def load_serialized_object(input_path):
     with open(input_path, "rb") as f:
         obj = pickle.load(f)
     return obj
+
+
+def plot_model():
+    from keras.utils import plot_model
+    from keras.applications.vgg16 import VGG16
+    from keras.applications.inception_v3 import InceptionV3
+    from keras.applications.resnet50 import ResNet50
+
+    model = VGG16(weights='imagenet', include_top=False)
+    plot_model(model, to_file='vgg16.png', show_shapes=True)
+
+    model = InceptionV3(weights='imagenet', include_top=False)
+    plot_model(model, to_file='inceptionv3.png', show_shapes=True)
+
+    model = ResNet50(weights='imagenet', include_top=False)
+    plot_model(model, to_file='resnet50.png', show_shapes=True)
+
+
+def print_model_summary(training_features_path, training_label_path,
+          val_features_path=None, val_label_path=None):
+    from keras.utils import to_categorical
+    from sklearn.model_selection import train_test_split
+
+    training_data, training_label = load_bottleneck_features(
+        training_features_path, training_label_path)
+
+    n_classes = len(np.unique(training_label))
+    assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
+    if n_classes > 2:
+        # OHE training label
+        training_label = to_categorical(training_label, n_classes)
+
+    if val_features_path:
+        val_data, val_label = load_bottleneck_features(
+            val_features_path, val_label_path)
+        train_data, train_label = training_data, training_label
+        if n_classes > 2:
+            val_label = to_categorical(val_label, n_classes)
+    else:
+        # Split into train and validation set
+        train_data, val_data, train_label, val_label = train_test_split(
+            training_data, training_label, random_state=42,
+            stratify=training_label)
+
+    # Prepare the model
+    model = get_top_model(train_data.shape[1:], n_classes)
+    model.summary()
+
+
+def get_full_model(image_size, base_architecture, n_target_classes,
+                   top_model_weights_path):
+    abs_top_model_weights_path = data_path(top_model_weights_path)
+    input_size = (image_size[0], image_size[1], 3)
+    input_tensor = Input(shape=input_size)
+
+    # Build the VGG16 network and get only the bottleneck features
+    if base_architecture == 'vgg16':
+        base_model = applications.VGG16(
+            weights='imagenet', include_top=False, input_tensor=input_tensor)
+    elif base_architecture == 'inceptionv3':
+        base_model = applications.InceptionV3(
+            weights='imagenet', include_top=False, input_tensor=input_tensor)
+    elif base_architecture == 'resnet50':
+        base_model = applications.ResNet50(
+            weights='imagenet', include_top=False, input_tensor=input_tensor)
+    else:
+        raise ValueError('Model available: vgg16, inception_v3, resnet50')
+
+    # The top model
+    top_model = get_top_model(
+        input_shape=base_model.output_shape[1:],  n_classes=n_target_classes)
+    top_model.load_weights(abs_top_model_weights_path)
+
+    # Add the model on top of the convolutional base
+    model = Model(
+        input=base_model.input,
+        output=top_model(base_model.output))
+
+    return model
+
+
+def get_top_model(input_shape, n_classes):
+    """Create a simple fully connected layers (2HL) to train extracted
+        ConvNet features.
+
+    :param input_shape: The shape of the input (the output of ConvNet layer).
+    :type input_shape: int
+
+    :param n_classes: The number of classes in target classification.
+    :type n_classes: int
+
+    :return:
+    """
+    assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
+    model = Sequential()
+    model.add(Flatten(input_shape=input_shape))
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    if n_classes > 2:
+        model.add(Dense(n_classes, activation='softmax'))
+    else:
+        model.add(Dense(1, activation='sigmoid'))
+    return model
+
+
+def load_bottleneck_features(features_path, label_path):
+    abs_features_path = data_path(features_path)
+    abs_label_path = data_path(label_path)
+
+    # Get the bottleneck features and its labels
+    with np.load(abs_features_path) as data:
+        features = data['arr_0.npy']
+    with np.load(abs_label_path) as data:
+        label = data['arr_0.npy']
+
+    return features, label
+
+
+
+# # plot_model()
+# models = ['vgg16', 'inceptionv3', 'resnet50']
+# for model in models:
+#     print model
+#     print_model_summary(
+#         training_features_path='uiuc/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='uiuc/224_224/training_label.npz')
