@@ -38,8 +38,8 @@ def get_subset_cifar(labels):
     train_subset_idx = np.where(np.isin(y_train.flatten(), labels))[0]
     test_subset_idx = np.where(np.isin(y_test.flatten(), labels))[0]
 
-    return ((x_train[train_subset_idx], y_train[train_subset_idx]),
-            (x_test[test_subset_idx, y_test[test_subset_idx]]))
+    return (x_train[train_subset_idx], y_train[train_subset_idx]),\
+           (x_test[test_subset_idx], y_test[test_subset_idx])
 
 
 def get_random_splits(seed):
@@ -60,6 +60,24 @@ def get_random_splits(seed):
     groupB = sorted(list(set(range(10)) - set(groupA)))
 
     return groupA, groupB
+
+
+def map_labels(label, label_map):
+    """Change the labels using the map.
+
+    :param label: The label numpy array.
+    :type label: np.ndarray
+
+    :param label_map: The map of the label from old to new.
+    :type label_map: dict
+
+    :return: A new label as a the result of mapping the old labels.
+    :rtype: np.ndarray
+    """
+    new_y_train = np.copy(label)
+    for k, v in label_map.items():
+        new_y_train[label == k] = v
+    return new_y_train
 
 
 def parse_arguments():
