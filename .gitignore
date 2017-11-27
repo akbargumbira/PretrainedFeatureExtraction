@@ -1,5 +1,6 @@
 .idea/
 venv/
+venv3/
 src/notebook/.ipynb_checkpoints/
 *.pyc
 

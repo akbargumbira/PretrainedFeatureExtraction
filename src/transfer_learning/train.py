@@ -28,13 +28,41 @@ def get_model(n_classes):
     model.add(Conv2D(32, (3, 3), activation='relu'))
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.25))
+
     model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
     model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.25))
+
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(0.25))
+    model.add(Dense(n_classes, activation='softmax'))
+    return model
+
+
+def get_model2(n_classes):
+    model = Sequential()
+    model.add(
+        Conv2D(16, (3, 3),
+               padding='same',
+               activation='relu',
+               input_shape=(32, 32, 3)))
+    model.add(Conv2D(16, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(32, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
     model.add(Dense(n_classes, activation='softmax'))
     return model
 
@@ -56,7 +84,7 @@ def train(x_train, y_train, x_test, y_test, output_dir,
     y_test = keras.utils.to_categorical(y_test, n_classes)
 
     # Prepare the model
-    model = get_model(n_classes)
+    model = get_model2(n_classes)
     print(model.summary())
     # Use saved model weights if specified
     if previous_model:
@@ -110,4 +138,4 @@ def train(x_train, y_train, x_test, y_test, output_dir,
 if __name__ == '__main__':
     # load data
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-    train(x_train, y_train, x_test, y_test, 'test', epochs=100)
+    train(x_train, y_train, x_test, y_test, 'test2', epochs=100)
