@@ -64,11 +64,76 @@ def get_model(n_classes):
     return model
 
 
+def get_proper_position(weights_position):
+    """Get the correct position of the layers given the weights position.
+
+    ... weights_position = 1 -> 0
+        weights_position = 2 -> 1
+        weights_position = 3 -> 4
+        weights_position = 4 -> 5
+        weights_position = 5 -> 8
+        weights_position = 6 -> 9
+
+    :param weights_position: The position of the weights on the 'paper'.
+    :type weights_position: int
+
+    :return: The proper position based on the built model.
+    :rtype: int
+    """
+    if 1 <= weights_position < 3:
+        return weights_position - 1
+    elif 3 <= weights_position < 5:
+        return weights_position + 1
+    elif 5 <= weights_position < 7:
+        return weights_position + 3
+    else:
+        raise ValueError('Weights position should be in [1, 6]')
+
+
+def get_prepared_model(n_classes, previous_model=None, copied_pos=None,
+                       copied_weight_trainable=True):
+    """Get prepared model.
+
+    :param n_classes: The number of classes
+    :type n_classes: int
+
+    :param previous_model: The path to previous model weights.
+    :type previous_model: str
+
+    :param copied_pos: If specified, will copy the weights from 1 to
+        copied_pos. The position is the same with on the 'paper'.
+    :type copied_pos: int
+
+    :return:
+    """
+    # Prepare the model
+    model = get_model(n_classes)
+    # Use saved model weights if specified
+    if previous_model:
+        model.load_weights(previous_model)
+
+    if copied_pos:
+        new_model = get_model(n_classes)
+        layer_pos = get_proper_position(copied_pos)
+        for i in list(range(layer_pos+1)):
+            new_model.layers[i].set_weights(model.layers[i].get_weights())
+            if not copied_weight_trainable:
+                new_model.layers[i].trainable = False
+        model = new_model
+
+    model.compile(optimizer='rmsprop',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+    print(model.summary())
+    return model
+
+
 def train(x_train, y_train, x_test, y_test, output_dir,
-          batch_size=256, previous_model=None, checkpoint=False, epochs=200,
+          batch_size=256, previous_model=None, copied_pos=None,
+          copied_weight_trainable=True, checkpoint=False, epochs=200,
           initial_epoch=0):
 
-    start_time = time.strftime("%Y%m%d-%H%M%S")
+    start_time = time.time()
     abs_output_path = root_path(
         'src', 'transfer_learning', 'models', output_dir)
     os.makedirs(abs_output_path, exist_ok=True)
@@ -82,14 +147,8 @@ def train(x_train, y_train, x_test, y_test, output_dir,
     y_test = keras.utils.to_categorical(y_test, n_classes)
 
     # Prepare the model
-    model = get_model(n_classes)
-    print(model.summary())
-    # Use saved model weights if specified
-    if previous_model:
-        model.load_weights(previous_model)
-    model.compile(optimizer='rmsprop',
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+    model = get_prepared_model(
+        n_classes, previous_model, copied_pos, copied_weight_trainable)
 
     # Prepare callbacks
     callbacks_list = []
@@ -123,20 +182,43 @@ def train(x_train, y_train, x_test, y_test, output_dir,
         callbacks=callbacks_list,
         verbose=2)
 
+    # Dump the run time
+    run_time = int(time.time() - start_time)
+    serialize_object(run_time, os.path.join(abs_output_path, 'time.pkl'))
     # Dump the history
-    end_time = time.strftime("%Y%m%d-%H%M%S")
-    hist_file = 'hist_%s_%s.pkl' % (start_time, end_time)
     serialize_object(
         history.history,
-        os.path.join(abs_output_path, hist_file))
+        os.path.join(abs_output_path, 'hist.pkl'))
 
     # Dump the last weights
     last_filepath = os.path.join(
-        abs_output_path,
-        'weights-last-{epoch:03d}-{val_acc:.2f}.hdf5'.format(
+        abs_output_path, 'weights-last.hdf5'.format(
             epoch=initial_epoch + epochs,
             val_acc=history.history['val_acc'][-1]))
     model.save_weights(last_filepath)
+
+
+def get_prepared_data(labels_map_file):
+    """Prepare the training and test data based on labels map file.
+
+    :param labels_map_file: The path to the labels map.
+    :type labels_map_file: str
+
+    :return: The tuple of (x_train, y_train), (x_test, y_test)
+    :rtype: tuple
+    """
+    labels_map = load_serialized_object(labels_map_file)
+    old_labels = list(labels_map.keys())
+
+    # Get all the data that have this old labels
+    (x_train, y_train), (x_test, y_test) = get_subset_cifar(old_labels)
+
+    # Change the labels using the map
+    y_train = map_labels(y_train, labels_map)
+    y_test = map_labels(y_test, labels_map)
+
+    return (x_train, y_train), (x_test, y_test)
+
 
 if __name__ == '__main__':
     epochs = 100
@@ -153,14 +235,8 @@ if __name__ == '__main__':
     #         map_file = root_path('src', 'transfer_learning', 'models', 'data',
     #                              '%s%s_%s_labels_map.pkl' % (
     #                                    prefix, seed, group))
-    #         labels_map = load_serialized_object(map_file)
-    #         old_labels = list(labels_map.keys())
-    #         # Get all the data that have this old labels
-    #         (x_train, y_train), (x_test, y_test) = get_subset_cifar(old_labels)
-    #         # Change the labels using the map
-    #         y_train = map_labels(y_train, labels_map)
-    #         y_test = map_labels(y_test, labels_map)
     #         output_dir = 'result/%s%s%s' % (prefix, seed, group)
+    #         (x_train, y_train), (x_test, y_test) = get_prepared_data(map_file)
     #         train(x_train, y_train, x_test, y_test, output_dir,
     #               epochs=epochs, checkpoint=True)
 
@@ -170,40 +246,124 @@ if __name__ == '__main__':
     # for group in groups:
     #     map_file = root_path('src', 'transfer_learning', 'models', 'data',
     #                          '%s_%s_labels_map.pkl' % (prefix, group))
-    #     labels_map = load_serialized_object(map_file)
-    #     old_labels = list(labels_map.keys())
-    #     # Get all the data that have this old labels
-    #     (x_train, y_train), (x_test, y_test) = get_subset_cifar(old_labels)
-    #     # Change the labels using the map
-    #     y_train = map_labels(y_train, labels_map)
-    #     y_test = map_labels(y_test, labels_map)
     #     output_dir = 'result/%s%s' % (prefix, group)
+    #     (x_train, y_train), (x_test, y_test) = get_prepared_data(map_file)
     #     train(x_train, y_train, x_test, y_test, output_dir, epochs=epochs,
     #           checkpoint=True)
 
     # # TRANSFER
-    # # 1. SELFFER, not finetuned
-    # # prefix = 'half_rand'
-    # groups = ['A', 'B']
-    # for seed in range(3):
-    #     for group in groups:
-    #         map_file = root_path('src', 'transfer_learning', 'models', 'data',
-    #                              '%s%s_%s_labels_map.pkl' % (
-    #                                  prefix, seed, group))
-    #         labels_map = load_serialized_object(map_file)
-    #         old_labels = list(labels_map.keys())
-    #         # Get all the data that have this old labels
-    #         (x_train, y_train), (x_test, y_test) = get_subset_cifar(old_labels)
-    #         # Change the labels using the map
-    #         y_train = map_labels(y_train, labels_map)
-    #         y_test = map_labels(y_test, labels_map)
-    #
-    #         for layer in range(6):
-    #             # Copy this layer weight only
-    #             previous_model =
-    #
-    #
-    #             output_dir = 'result/%s%s%s' % (prefix, seed, group)
-    #             train(x_train, y_train, x_test, y_test, output_dir,
-    #                   epochs=epochs, checkpoint=True)
+    # 1. SELFFER, not finetuned (36 models)
+    prefix = 'half_rand'
+    groups = ['A', 'B']
+    for seed in range(3):
+        for group in groups:
+            map_file = root_path('src', 'transfer_learning', 'models', 'data',
+                                 '%s%s_%s_labels_map.pkl' % (prefix, seed, group))
+            (x_train, y_train), (x_test, y_test) = get_prepared_data(map_file)
 
+            # Using pretrained model of the same group
+            previous_model = root_path(
+                'src', 'transfer_learning', 'models', 'result',
+                '%s%s%s' % (prefix, seed, group),
+                'weights-last.hdf5')
+
+            for layer in range(1, 7):
+                # Copy this layer weight only
+                output_dir = 'result/selffer_%s%s%s%s_%s' % (
+                    seed, group, seed, group, layer)
+                train(x_train, y_train, x_test, y_test,
+                      output_dir,
+                      previous_model=previous_model,
+                      copied_pos=layer,
+                      copied_weight_trainable=False,
+                      epochs=epochs,
+                      checkpoint=True)
+
+    # 2. SELFFER, finetuned (36 models)
+    prefix = 'half_rand'
+    groups = ['A', 'B']
+    for seed in range(3):
+        for group in groups:
+            map_file = root_path('src', 'transfer_learning', 'models',
+                                 'data', '%s%s_%s_labels_map.pkl' % (
+                                     prefix, seed, group))
+            (x_train, y_train), (x_test, y_test) = get_prepared_data(
+                map_file)
+
+            # Using pretrained model of the same group
+            previous_model = root_path(
+                'src', 'transfer_learning', 'models', 'result',
+                '%s%s%s' % (prefix, seed, group),
+                'weights-last.hdf5')
+
+            for layer in range(1, 7):
+                # Copy this layer weight only
+                output_dir = 'result/selffer_ft_%s%s%s%s_%s' % (
+                    seed, group, seed, group, layer)
+
+                train(x_train, y_train, x_test, y_test,
+                      output_dir,
+                      previous_model=previous_model,
+                      copied_pos=layer,
+                      copied_weight_trainable=True,
+                      epochs=epochs,
+                      checkpoint=True)
+
+    # 3. TRANSFER A->B, B->A, not finetuned
+    prefix = 'half_rand'
+    groups = ['A', 'B']
+    for seed in range(3):
+        for target_group in groups:
+            # Target task: this group
+            map_file = root_path('src', 'transfer_learning', 'models', 'data',
+                                 '%s%s_%s_labels_map.pkl' % (prefix, seed, target_group))
+            (x_train, y_train), (x_test, y_test) = get_prepared_data(map_file)
+
+            # Using the pretrained model of: the other group
+            base_group = list(set(groups) - set(list(target_group)))[0]
+            previous_model = root_path(
+                'src', 'transfer_learning', 'models', 'result',
+                '%s%s%s' % (prefix, seed, base_group),
+                'weights-last.hdf5')
+
+            for layer in range(1, 7):
+                output_dir = 'result/transfer_%s%s%s%s_%s' % (
+                    seed, base_group, seed, target_group, layer)
+                train(x_train, y_train, x_test, y_test,
+                      output_dir,
+                      previous_model=previous_model,
+                      copied_pos=layer,
+                      copied_weight_trainable=False,
+                      epochs=epochs,
+                      checkpoint=True)
+
+    # 4. TRANSFER A->B, B->A, finetuned
+    prefix = 'half_rand'
+    groups = ['A', 'B']
+    for seed in range(3):
+        for target_group in groups:
+            # Target task: this group
+            map_file = root_path('src', 'transfer_learning', 'models',
+                                 'data',
+                                 '%s%s_%s_labels_map.pkl' % (
+                                 prefix, seed, target_group))
+            (x_train, y_train), (x_test, y_test) = get_prepared_data(
+                map_file)
+
+            # Using the pretrained model of: the other group
+            base_group = list(set(groups) - set(list(target_group)))[0]
+            previous_model = root_path(
+                'src', 'transfer_learning', 'models', 'result',
+                '%s%s%s' % (prefix, seed, base_group),
+                'weights-last.hdf5')
+
+            for layer in range(1, 7):
+                output_dir = 'result/transfer_ft_%s%s%s%s_%s' % (
+                    seed, base_group, seed, target_group, layer)
+                train(x_train, y_train, x_test, y_test,
+                      output_dir,
+                      previous_model=previous_model,
+                      copied_pos=layer,
+                      copied_weight_trainable=True,
+                      epochs=epochs,
+                      checkpoint=True)
