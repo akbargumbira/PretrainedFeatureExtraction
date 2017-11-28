@@ -94,10 +94,11 @@ def get_prepared_model(n_classes, previous_model=None, copied_pos=None,
                        copied_weight_trainable=True):
     """Get prepared model.
 
-    :param n_classes: The number of classes
+    :param n_classes: The number of classes of the target task.
     :type n_classes: int
 
-    :param previous_model: The path to previous model weights.
+    :param previous_model: The path to previous model weights. In this case,
+        the pretrained model on the base task.
     :type previous_model: str
 
     :param copied_pos: If specified, will copy the weights from 1 to
@@ -106,9 +107,13 @@ def get_prepared_model(n_classes, previous_model=None, copied_pos=None,
 
     :return:
     """
-    # Prepare the model
-    model = get_model(n_classes)
-    # Use saved model weights if specified
+    if n_classes == 10:
+        # Training the netbase
+        model = get_model(n_classes)
+    else:
+        # Prepare the pretrained model of the other group
+        model = get_model(10 - n_classes)
+
     if previous_model:
         model.load_weights(previous_model)
 
@@ -252,9 +257,10 @@ if __name__ == '__main__':
     #           checkpoint=True)
 
     # # TRANSFER
-    # 1. SELFFER, not finetuned (36 models)
+    # 1 + 2. SELFFER, not finetuned (36 models) + finetuned (36 models)
     prefix = 'half_rand'
     groups = ['A', 'B']
+    finetuned_options = [False, True]
     for seed in range(3):
         for group in groups:
             map_file = root_path('src', 'transfer_learning', 'models', 'data',
@@ -269,101 +275,88 @@ if __name__ == '__main__':
 
             for layer in range(1, 7):
                 # Copy this layer weight only
-                output_dir = 'result/selffer_%s%s%s%s_%s' % (
-                    seed, group, seed, group, layer)
-                train(x_train, y_train, x_test, y_test,
-                      output_dir,
-                      previous_model=previous_model,
-                      copied_pos=layer,
-                      copied_weight_trainable=False,
-                      epochs=epochs,
-                      checkpoint=True)
+                for is_finetuned in finetuned_options:
+                    if is_finetuned:
+                        output_dir = 'result/selffer_ft_%s%s%s%s_%s' % (
+                            seed, group, seed, group, layer)
+                    else:
+                        output_dir = 'result/selffer_%s%s%s%s_%s' % (
+                            seed, group, seed, group, layer)
 
-    # 2. SELFFER, finetuned (36 models)
+                    train(x_train, y_train, x_test, y_test,
+                          output_dir,
+                          previous_model=previous_model,
+                          copied_pos=layer,
+                          copied_weight_trainable=is_finetuned,
+                          epochs=epochs,
+                          checkpoint=False)
+
+    # 3 + 4. TRANSFER A->B, B->A, not finetuned (36 models) + ft (36 models)
     prefix = 'half_rand'
     groups = ['A', 'B']
-    for seed in range(3):
-        for group in groups:
-            map_file = root_path('src', 'transfer_learning', 'models',
-                                 'data', '%s%s_%s_labels_map.pkl' % (
-                                     prefix, seed, group))
-            (x_train, y_train), (x_test, y_test) = get_prepared_data(
-                map_file)
-
-            # Using pretrained model of the same group
-            previous_model = root_path(
-                'src', 'transfer_learning', 'models', 'result',
-                '%s%s%s' % (prefix, seed, group),
-                'weights-last.hdf5')
-
-            for layer in range(1, 7):
-                # Copy this layer weight only
-                output_dir = 'result/selffer_ft_%s%s%s%s_%s' % (
-                    seed, group, seed, group, layer)
-
-                train(x_train, y_train, x_test, y_test,
-                      output_dir,
-                      previous_model=previous_model,
-                      copied_pos=layer,
-                      copied_weight_trainable=True,
-                      epochs=epochs,
-                      checkpoint=True)
-
-    # 3. TRANSFER A->B, B->A, not finetuned
-    prefix = 'half_rand'
-    groups = ['A', 'B']
+    finetuned_options = [False, True]
     for seed in range(3):
         for target_group in groups:
             # Target task: this group
             map_file = root_path('src', 'transfer_learning', 'models', 'data',
-                                 '%s%s_%s_labels_map.pkl' % (prefix, seed, target_group))
+                                 '%s%s_%s_labels_map.pkl' % (
+                                     prefix, seed, target_group))
             (x_train, y_train), (x_test, y_test) = get_prepared_data(map_file)
 
             # Using the pretrained model of: the other group
             base_group = list(set(groups) - set(list(target_group)))[0]
             previous_model = root_path(
                 'src', 'transfer_learning', 'models', 'result',
-                '%s%s%s' % (prefix, seed, base_group),
-                'weights-last.hdf5')
+                '%s%s%s' % (prefix, seed, base_group), 'weights-last.hdf5')
 
             for layer in range(1, 7):
-                output_dir = 'result/transfer_%s%s%s%s_%s' % (
-                    seed, base_group, seed, target_group, layer)
-                train(x_train, y_train, x_test, y_test,
-                      output_dir,
-                      previous_model=previous_model,
-                      copied_pos=layer,
-                      copied_weight_trainable=False,
-                      epochs=epochs,
-                      checkpoint=True)
+                for is_finetuned in finetuned_options:
+                    if is_finetuned:
+                        output_dir = 'result/transfer_ft_%s%s%s%s_%s' % (
+                            seed, base_group, seed, target_group, layer)
+                    else:
+                        output_dir = 'result/transfer_%s%s%s%s_%s' % (
+                            seed, base_group, seed, target_group, layer)
 
-    # 4. TRANSFER A->B, B->A, finetuned
-    prefix = 'half_rand'
+                    train(x_train, y_train, x_test, y_test,
+                          output_dir,
+                          previous_model=previous_model,
+                          copied_pos=layer,
+                          copied_weight_trainable=is_finetuned,
+                          epochs=epochs,
+                          checkpoint=False)
+
+    # 5 + 6. TRANSFER Animal->Transport, Transport->Animal,
+    # Not Finetuned + Finetuned (24 models)
+    prefix = 'half_anitrans'
     groups = ['A', 'B']
-    for seed in range(3):
-        for target_group in groups:
-            # Target task: this group
-            map_file = root_path('src', 'transfer_learning', 'models',
-                                 'data',
-                                 '%s%s_%s_labels_map.pkl' % (
-                                 prefix, seed, target_group))
-            (x_train, y_train), (x_test, y_test) = get_prepared_data(
-                map_file)
+    finetuned_options = [False, True]
+    for target_group in groups:
+        # Target task: this group
+        map_file = root_path('src', 'transfer_learning', 'models',
+                             'data', '%s_%s_labels_map.pkl' % (
+                                 prefix, target_group))
+        (x_train, y_train), (x_test, y_test) = get_prepared_data(map_file)
 
-            # Using the pretrained model of: the other group
-            base_group = list(set(groups) - set(list(target_group)))[0]
-            previous_model = root_path(
-                'src', 'transfer_learning', 'models', 'result',
-                '%s%s%s' % (prefix, seed, base_group),
-                'weights-last.hdf5')
+        # Using the pretrained model of: the other group
+        base_group = list(set(groups) - set(list(target_group)))[0]
+        previous_model = root_path(
+            'src', 'transfer_learning', 'models', 'result',
+            '%s%s' % (prefix, base_group), 'weights-last.hdf5')
 
-            for layer in range(1, 7):
-                output_dir = 'result/transfer_ft_%s%s%s%s_%s' % (
-                    seed, base_group, seed, target_group, layer)
+        for layer in range(1, 7):
+            for is_finetuned in finetuned_options:
+                if is_finetuned:
+                    output_dir = 'result/transfer_ft_anitrans_%s%s_%s' % (
+                        base_group, target_group, layer)
+                else:
+                    output_dir = 'result/transfer_anitrans_%s%s_%s' % (
+                        base_group, target_group, layer)
+
                 train(x_train, y_train, x_test, y_test,
                       output_dir,
                       previous_model=previous_model,
                       copied_pos=layer,
-                      copied_weight_trainable=True,
+                      copied_weight_trainable=is_finetuned,
                       epochs=epochs,
-                      checkpoint=True)
+                      checkpoint=False)
