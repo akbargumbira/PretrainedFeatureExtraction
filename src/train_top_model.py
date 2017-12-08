@@ -108,17 +108,18 @@ def train(training_features_path, training_label_path, output_dir,
 
 # --------------------------------------------------------------------
 # Codalab Smile
-# for model in models:
-#     print 'Training with %s....' % model
-#     train(
-#         training_features_path='codalab/224_224/features_training_%s.npz' %
-#                                model,
-#         training_label_path='codalab/224_224/training_smile_label.npz',
-#         output_dir='codalab/224_224/model/smile/%s/' % model,
-#         epochs=200,
-#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
-#         val_label_path='codalab/224_224/val_smile_label.npz'
-#     )
+models = ['inceptionv3']
+for model in models:
+    print('Training with %s....' % model)
+    train(
+        training_features_path='codalab/224_224/features_training_%s.npz' %
+                               model,
+        training_label_path='codalab/224_224/training_smile_label.npz',
+        output_dir='codalab/224_224/model/smile/%s/' % model,
+        epochs=200,
+        val_features_path='codalab/224_224/features_val_%s.npz' % model,
+        val_label_path='codalab/224_224/val_smile_label.npz'
+    )
 
 # # Codalab Gender
 # for model in models:
