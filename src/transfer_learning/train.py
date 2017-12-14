@@ -24,47 +24,119 @@ def preprocess_input(x_train, x_test):
     return x_train, x_test
 
 
-def get_model(n_classes):
+def get_model(n_classes, version=3):
     model = Sequential()
-    model.add(
-        Conv2D(32, (3, 3),
-               name='conv1_1',
-               padding='same',
-               activation='relu',
-               input_shape=(32, 32, 3)))
-    model.add(Conv2D(32, (3, 3),
-                     name='conv1_2',
-                     activation='relu'))
-    model.add(MaxPooling2D((2, 2), name='pool1'))
-    model.add(Dropout(0.2))
 
-    model.add(Conv2D(64, (3, 3),
-                     name='conv2_1',
-                     activation='relu',
-                     padding='same'))
-    model.add(Conv2D(64, (3, 3),
-                     name='conv2_2',
-                     activation='relu'))
-    model.add(MaxPooling2D((2, 2), name='pool2'))
-    model.add(Dropout(0.3))
+    if version == 1:
+        model.add(
+            Conv2D(32, (3, 3),
+                   name='conv1',
+                   padding='same',
+                   activation='relu',
+                   input_shape=(32, 32, 3)))
+        model.add(MaxPooling2D((2, 2), name='pool1'))
+        model.add(Dropout(0.2))
 
-    model.add(Conv2D(128, (3, 3),
-                     name='conv3_1',
-                     activation='relu',
-                     padding='same'))
-    model.add(Conv2D(128, (3, 3),
-                     name='conv3_2',
-                     activation='relu'))
-    model.add(MaxPooling2D((2, 2), name='pool3'))
-    model.add(Dropout(0.4))
+        model.add(Conv2D(32, (3, 3),
+                         name='conv2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool2'))
+        model.add(Dropout(0.3))
 
-    model.add(Flatten())
-    model.add(Dense(n_classes, name='fc4', activation='softmax'))
+        model.add(Conv2D(32, (3, 3),
+                         name='conv3_1',
+                         padding='same',
+                         activation = 'relu'))
+        model.add(Conv2D(32, (3, 3),
+                         name='conv3_2',
+                         padding='same',
+                         activation='relu'))
+        model.add(Conv2D(32, (3, 3),
+                         name='conv3_3',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool3'))
+        model.add(Dropout(0.4))
+
+        model.add(Flatten())
+        model.add(Dense(64, activation='relu', name'fc4'))
+        model.add(Dropout(0.4))
+        model.add(Dense(n_classes, name='fc5', activation='softmax'))
+    elif version == 2:
+        model.add(
+            Conv2D(32, (3, 3),
+                   name='conv1_1',
+                   padding='same',
+                   activation='relu',
+                   input_shape=(32, 32, 3)))
+        model.add(Conv2D(32, (3, 3),
+                         name='conv1_2',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool1'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(64, (3, 3),
+                         name='conv2_1',
+                         activation='relu',
+                         padding='same'))
+        model.add(Conv2D(64, (3, 3),
+                         name='conv2_2',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool2'))
+        model.add(Dropout(0.3))
+
+        model.add(Conv2D(128, (3, 3),
+                         name='conv3',
+                         activation='relu',
+                         padding='same'))
+        model.add(MaxPooling2D((2, 2), name='pool3'))
+        model.add(Dropout(0.4))
+
+        model.add(Flatten())
+        model.add(Dense(64, activation='relu', name='fc4'))
+        model.add(Dropout(0.3))
+        model.add(Dense(n_classes, name='fc5', activation='softmax'))
+    elif version == 3:
+        model.add(
+            Conv2D(32, (3, 3),
+                   name='conv1_1',
+                   padding='same',
+                   activation='relu',
+                   input_shape=(32, 32, 3)))
+        model.add(Conv2D(32, (3, 3),
+                         name='conv1_2',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool1'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(64, (3, 3),
+                         name='conv2_1',
+                         activation='relu',
+                         padding='same'))
+        model.add(Conv2D(64, (3, 3),
+                         name='conv2_2',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool2'))
+        model.add(Dropout(0.3))
+
+        model.add(Conv2D(128, (3, 3),
+                         name='conv3_1',
+                         activation='relu',
+                         padding='same'))
+        model.add(Conv2D(128, (3, 3),
+                         name='conv3_2',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool3'))
+        model.add(Dropout(0.4))
+
+        model.add(Flatten())
+        model.add(Dense(n_classes, name='fc4', activation='softmax'))
 
     return model
 
 
-def get_proper_position(weights_position):
+def get_proper_position(weights_position, version=3):
     """Get the correct position of the layers given the weights position.
 
     ... weights_position = 1 -> 0
@@ -80,18 +152,23 @@ def get_proper_position(weights_position):
     :return: The proper position based on the built model.
     :rtype: int
     """
-    if 1 <= weights_position < 3:
-        return weights_position - 1
-    elif 3 <= weights_position < 5:
-        return weights_position + 1
-    elif 5 <= weights_position < 7:
-        return weights_position + 3
-    else:
-        raise ValueError('Weights position should be in [1, 6]')
+    if version == 1:
+        pass
+    elif version == 2:
+        pass
+    elif version == 3:
+        if 1 <= weights_position < 3:
+            return weights_position - 1
+        elif 3 <= weights_position < 5:
+            return weights_position + 1
+        elif 5 <= weights_position < 7:
+            return weights_position + 3
+        else:
+            raise ValueError('Weights position should be in [1, 6]')
 
 
-def get_prepared_model(n_classes, previous_model=None, copied_pos=None,
-                       copied_weight_trainable=True):
+def get_prepared_model(n_classes, version=3, previous_model=None,
+                       copied_pos=None, copied_weight_trainable=True):
     """Get prepared model.
 
     :param n_classes: The number of classes of the target task.
@@ -109,17 +186,17 @@ def get_prepared_model(n_classes, previous_model=None, copied_pos=None,
     """
     if n_classes == 10:
         # Training the netbase
-        model = get_model(n_classes)
+        model = get_model(n_classes, version)
     else:
         # Prepare the pretrained model of the other group
-        model = get_model(10 - n_classes)
+        model = get_model(10 - n_classes, version)
 
     if previous_model:
         model.load_weights(previous_model)
 
     if copied_pos:
-        new_model = get_model(n_classes)
-        layer_pos = get_proper_position(copied_pos)
+        new_model = get_model(n_classes, version)
+        layer_pos = get_proper_position(copied_pos, version)
         for i in list(range(layer_pos+1)):
             new_model.layers[i].set_weights(model.layers[i].get_weights())
             if not copied_weight_trainable:
@@ -133,7 +210,7 @@ def get_prepared_model(n_classes, previous_model=None, copied_pos=None,
     return model
 
 
-def train(x_train, y_train, x_test, y_test, output_dir,
+def train(x_train, y_train, x_test, y_test, output_dir, version=3,
           batch_size=256, previous_model=None, copied_pos=None,
           copied_weight_trainable=True, checkpoint=False, epochs=200,
           initial_epoch=0):
@@ -153,7 +230,7 @@ def train(x_train, y_train, x_test, y_test, output_dir,
 
     # Prepare the model
     model = get_prepared_model(
-        n_classes, previous_model, copied_pos, copied_weight_trainable)
+        n_classes, version, previous_model, copied_pos, copied_weight_trainable)
 
     # Prepare callbacks
     callbacks_list = []
