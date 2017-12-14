@@ -212,8 +212,8 @@ def get_prepared_model(n_classes, version=3, previous_model=None,
 
 def train(x_train, y_train, x_test, y_test, output_dir, version=3,
           batch_size=256, previous_model=None, copied_pos=None,
-          copied_weight_trainable=True, checkpoint=False, epochs=200,
-          initial_epoch=0):
+          copied_weight_trainable=True, checkpoint=False, tensorboard=False,
+          epochs=200, initial_epoch=0):
 
     start_time = time.time()
     abs_output_path = root_path(
@@ -250,9 +250,10 @@ def train(x_train, y_train, x_test, y_test, output_dir, version=3,
         callbacks_list.append(model_checkpoint)
 
     # 2. Tensorboard
-    tensorboard_checkpoint = TensorBoard(
-        log_dir=os.path.join(abs_output_path, 'tensorboard'))
-    callbacks_list.append(tensorboard_checkpoint)
+    if tensorboard:
+        tensorboard_checkpoint = TensorBoard(
+            log_dir=os.path.join(abs_output_path, 'tensorboard'))
+        callbacks_list.append(tensorboard_checkpoint)
 
     history = model.fit(
         x_train,
