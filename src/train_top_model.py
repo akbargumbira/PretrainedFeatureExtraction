@@ -12,10 +12,12 @@ from src.utilities import data_path, serialize_object, get_top_model, \
 
 
 def train(training_features_path, training_label_path, output_dir,
-          previous_model=None, epochs=100, initial_epoch=0,
+          previous_model=None, epochs=100, initial_epoch=0, checkpoint=False,
           val_features_path=None, val_label_path=None):
     start_time = time.strftime("%Y%m%d-%H%M%S")
     abs_output_path = data_path(output_dir)
+    # os.makedirs(abs_output_path, exist_ok=True)
+
     training_data, training_label = load_bottleneck_features(
         training_features_path, training_label_path)
 
@@ -49,18 +51,21 @@ def train(training_features_path, training_label_path, output_dir,
                   metrics=['accuracy'])
 
     # Prepare callbacks
+    callbacks_list = []
+
     # 1. ModelCheckpoint
-    checkpoint_filepath = os.path.join(
-        abs_output_path,
-        'checkpoint',
-        'weights-improvement-{epoch:03d}-{val_acc:.2f}.hdf5')
-    checkpoint = ModelCheckpoint(
-        checkpoint_filepath,
-        monitor='val_acc',
-        verbose=1,
-        save_best_only=True,
-        mode='max')
-    callbacks_list = [checkpoint]
+    if checkpoint:
+        checkpoint_filepath = os.path.join(
+            abs_output_path,
+            'checkpoint',
+            'weights-improvement-{epoch:03d}-{val_acc:.2f}.hdf5')
+        checkpoint = ModelCheckpoint(
+            checkpoint_filepath,
+            monitor='val_acc',
+            verbose=1,
+            save_best_only=True,
+            mode='max')
+        callbacks_list.append(checkpoint)
 
     history = model.fit(
         train_data,
@@ -71,12 +76,14 @@ def train(training_features_path, training_label_path, output_dir,
         callbacks=callbacks_list,
         verbose=2)
 
+    # Dump the run time
+    run_time = int(time.time() - start_time)
+    serialize_object(run_time, os.path.join(abs_output_path, 'time.pkl'))
+
     # Dump the history
-    end_time = time.strftime("%Y%m%d-%H%M%S")
-    hist_file = 'hist_%s_%s.pkl' % (start_time, end_time)
     serialize_object(
         history.history,
-        os.path.join(abs_output_path, hist_file))
+        os.path.join(abs_output_path, 'hist.pkl'))
     # Dump the last weights
     last_filepath = os.path.join(
         abs_output_path,
@@ -107,37 +114,37 @@ def train(training_features_path, training_label_path, output_dir,
 #         epochs=200)
 
 # --------------------------------------------------------------------
-# Codalab Smile
-models = ['inceptionv3']
+# # Codalab Smile
+models = ['vgg16']
+# for model in models:
+#     print('Training with %s....' % model)
+#     train(
+#         training_features_path='codalab/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='codalab/224_224/training_smile_label.npz',
+#         output_dir='codalab/224_224/model/smile/%s/' % model,
+#         epochs=200,
+#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
+#         val_label_path='codalab/224_224/val_smile_label.npz'
+#     )
+
+# Codalab Gender
 for model in models:
     print('Training with %s....' % model)
     train(
         training_features_path='codalab/224_224/features_training_%s.npz' %
                                model,
-        training_label_path='codalab/224_224/training_smile_label.npz',
-        output_dir='codalab/224_224/model/smile/%s/' % model,
+        training_label_path='codalab/224_224/training_gender_label.npz',
+        output_dir='codalab/224_224/model/gender/%s/' % model,
         epochs=200,
         val_features_path='codalab/224_224/features_val_%s.npz' % model,
-        val_label_path='codalab/224_224/val_smile_label.npz'
+        val_label_path='codalab/224_224/val_gender_label.npz'
     )
 
-# # Codalab Gender
-# for model in models:
-#     print 'Training with %s....' % model
-#     train(
-#         training_features_path='codalab/224_224/features_training_%s.npz' %
-#                                model,
-#         training_label_path='codalab/224_224/training_gender_label.npz',
-#         output_dir='codalab/224_224/model/gender/%s/' % model,
-#         epochs=200,
-#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
-#         val_label_path='codalab/224_224/val_gender_label.npz'
-#     )
-#
 # # ----------------------------------------------------------------------
 # # Kaggle Dog and Cat
 # for model in models:
-#     print 'Training with %s....' % model
+#     print('Training with %s....' % model)
 #     train(
 #         training_features_path='kaggle_dog_cat/224_224/features_training_%s'
 #                                '.npz' % model,
