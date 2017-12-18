@@ -10,25 +10,34 @@ from src.utilities import load_dataset, get_full_model
 
 
 
-TOP_MODEL_WEIGHTS_PATH = 'codalab/224_224/model/gender/vgg16/weights-last-200' \
-                         '-0.81.hdf5'
+TOP_MODEL_WEIGHTS_PATH = 'codalab/224_224/model/gender/vgg16/weights' \
+                         '-last-200-0.80.hdf5'
 IMAGE_SIZE = (224, 224)
-BASE_ARCHITECTURE = 'vgg16'
+BASE_ARCHITECTURE = 'inceptionv3'
+n_classes = 3
 
 full_model = get_full_model(
-    IMAGE_SIZE, BASE_ARCHITECTURE, n_target_classes=3,
+    IMAGE_SIZE, BASE_ARCHITECTURE, n_target_classes=n_classes,
     top_model_weights_path=TOP_MODEL_WEIGHTS_PATH)
 
+n_last = {
+    1: 17, #trainable starting from 17
+    2: 16,
+    3: 15,
+    4: 13,
+    5: 12,
+    6: 11
+}
 # Fine tune the base model by training the CONV BLOCK #5 and the seq only
-for layer in full_model.layers[:15]:
-    layer.trainable = False
+# for layer in full_model.layers[:15]:
+#     layer.trainable = False
 
-# Compile the model with small learning rate
+loss = 'categorical_crossentropy' if n_classes > 2 else \
+        'binary_crossentropy'
 full_model.compile(
-    loss='binary_crossentropy',
-    optimizer=SGD(lr=1e-4, momentum=0.9),
-    metrics=['accuracy']
-)
+    optimizer='rmsprop',
+    loss=loss,
+    metrics=['accuracy'])
 
 print(full_model.summary())
 
