@@ -14,9 +14,9 @@ from src.utilities import data_path, serialize_object, get_top_model, \
 def train(training_features_path, training_label_path, output_dir,
           previous_model=None, epochs=100, initial_epoch=0, checkpoint=False,
           val_features_path=None, val_label_path=None):
-    start_time = time.strftime("%Y%m%d-%H%M%S")
+    start_time = time.time()
     abs_output_path = data_path(output_dir)
-    # os.makedirs(abs_output_path, exist_ok=True)
+    os.makedirs(abs_output_path, exist_ok=True)
 
     training_data, training_label = load_bottleneck_features(
         training_features_path, training_label_path)
@@ -55,10 +55,10 @@ def train(training_features_path, training_label_path, output_dir,
 
     # 1. ModelCheckpoint
     if checkpoint:
+        checkpoint_basedir = os.path.join(abs_output_path, 'checkpoint')
+        os.makedirs(checkpoint_basedir, exist_ok=True)
         checkpoint_filepath = os.path.join(
-            abs_output_path,
-            'checkpoint',
-            'weights-improvement-{epoch:03d}-{val_acc:.2f}.hdf5')
+            checkpoint_basedir, 'improved-{epoch:03d}-{val_acc:.2f}.hdf5')
         checkpoint = ModelCheckpoint(
             checkpoint_filepath,
             monitor='val_acc',
@@ -93,56 +93,8 @@ def train(training_features_path, training_label_path, output_dir,
     model.save_weights(last_filepath)
 
 
-# UIUC
+# Kaggle Dog and Cat
 # models = ['vgg16', 'inceptionv3', 'resnet50']
-# for model in models:
-#     print('Training with %s....' % model)
-#     train(
-#         training_features_path='uiuc/224_224/features_training_%s.npz' %
-#                                model,
-#         training_label_path='uiuc/224_224/training_label.npz',
-#         output_dir='uiuc/224_224/model/%s/' % model,
-#         epochs=200)
-# models = ['vgg16', 'inceptionv3', 'resnet50']
-# for model in models:
-#     print 'Training with %s....' % model
-#     train(
-#         training_features_path='uiuc/224_224/features_training_%s.npz' %
-#                                model,
-#         training_label_path='uiuc/224_224/training_label.npz',
-#         output_dir='uiuc/224_224/model/%s/' % model,
-#         epochs=200)
-
-# --------------------------------------------------------------------
-# # Codalab Smile
-models = ['vgg16']
-# for model in models:
-#     print('Training with %s....' % model)
-#     train(
-#         training_features_path='codalab/224_224/features_training_%s.npz' %
-#                                model,
-#         training_label_path='codalab/224_224/training_smile_label.npz',
-#         output_dir='codalab/224_224/model/smile/%s/' % model,
-#         epochs=200,
-#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
-#         val_label_path='codalab/224_224/val_smile_label.npz'
-#     )
-
-# Codalab Gender
-for model in models:
-    print('Training with %s....' % model)
-    train(
-        training_features_path='codalab/224_224/features_training_%s.npz' %
-                               model,
-        training_label_path='codalab/224_224/training_gender_label.npz',
-        output_dir='codalab/224_224/model/gender/%s/' % model,
-        epochs=200,
-        val_features_path='codalab/224_224/features_val_%s.npz' % model,
-        val_label_path='codalab/224_224/val_gender_label.npz'
-    )
-
-# # ----------------------------------------------------------------------
-# # Kaggle Dog and Cat
 # for model in models:
 #     print('Training with %s....' % model)
 #     train(
@@ -150,5 +102,50 @@ for model in models:
 #                                '.npz' % model,
 #         training_label_path='kaggle_dog_cat/224_224/training_label.npz',
 #         output_dir='kaggle_dog_cat/224_224/model/%s/' % model,
+#         checkpoint=True,
 #         epochs=200)
+
+# # ----------------------------------------------------------------------
+# # UIUC
+# models = ['vgg16', 'inceptionv3', 'resnet50']
+# for model in models:
+#     print('Training with %s....' % model)
+#     train(
+#         training_features_path='uiuc/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='uiuc/224_224/training_label.npz',
+#         output_dir='uiuc/224_224/model/%s/' % model,
+#         checkpoint=True,
+#         epochs=200)
+
+# --------------------------------------------------------------------
+# Codalab Gender
+# models = ['vgg16', 'inceptionv3', 'resnet50']
+# for model in models:
+#     print('Training with %s....' % model)
+#     train(
+#         training_features_path='codalab/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='codalab/224_224/training_gender_label.npz',
+#         output_dir='codalab/224_224/model/gender/%s/' % model,
+#         checkpoint=True,
+#         epochs=200,
+#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
+#         val_label_path='codalab/224_224/val_gender_label.npz'
+#     )
+
+# # Codalab Smile
+models = ['vgg16', 'inceptionv3', 'resnet50']
+for model in models:
+    print('Training with %s....' % model)
+    train(
+        training_features_path='codalab/224_224/features_training_%s.npz' %
+                               model,
+        training_label_path='codalab/224_224/training_smile_label.npz',
+        output_dir='codalab/224_224/model/smile/%s/' % model,
+        epochs=200,
+        checkpoint=True,
+        val_features_path='codalab/224_224/features_val_%s.npz' % model,
+        val_label_path='codalab/224_224/val_smile_label.npz'
+    )
 

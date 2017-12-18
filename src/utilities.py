@@ -163,6 +163,14 @@ def save_dataset(data, output_dir, prefix='training'):
         data[2])
 
 
+def load_dataset_from_path(rel_path):
+    abs_path = data_path(rel_path)
+
+    with np.load(abs_path) as data:
+        t_data = data['arr_0.npy']
+        return t_data
+
+
 def load_dataset(input_dir, prefix='training', data_only=False):
     base_output = data_path(input_dir)
 
