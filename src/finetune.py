@@ -5,7 +5,7 @@ import time
 from keras import applications
 from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
-from keras.optimizers import RMSprop
+from keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 import numpy as np
 
@@ -36,9 +36,9 @@ def get_prepared_model(n_classes, n_last, top_model_weights_path):
 
     loss = 'categorical_crossentropy' if n_classes > 2 else \
         'binary_crossentropy'
-    # Train with 1/100 smaller lr
+    # Train with 1/1000 * default's SGD lr
     full_model.compile(
-        optimizer=RMSprop(lr=0.00001),
+        optimizer=SGD(lr=0.00001, momentum=0.9),
         loss=loss,
         metrics=['accuracy'])
 
@@ -123,11 +123,11 @@ def finetune(n_last,
     model.save_weights(last_filepath)
 
 
-epochs = 100
-batch_size = 64
+epochs = 50
+batch_size = 128
 # Codalab Gender
 top_model_weights_path = 'codalab/224_224/model/gender/vgg16/checkpoint/improved-191-0.82.hdf5'
-for i in list(range(1, 6)):
+for i in list(range(1, 3)):
     finetune(
         i,
         top_model_weights_path,
@@ -143,7 +143,7 @@ for i in list(range(1, 6)):
 
 # Codalab Smile
 top_model_weights_path = 'codalab/224_224/model/smile/vgg16/checkpoint/improved-190-0.74.hdf5'
-for i in list(range(1, 6)):
+for i in list(range(1, 3)):
     finetune(
         i,
         top_model_weights_path,
