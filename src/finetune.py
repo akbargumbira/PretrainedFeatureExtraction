@@ -38,7 +38,7 @@ def get_prepared_model(n_classes, n_last, top_model_weights_path):
         'binary_crossentropy'
     # Train with 1/1000 * default's SGD lr
     full_model.compile(
-        optimizer=SGD(lr=0.00001, momentum=0.9),
+        optimizer=SGD(lr=0.000001),
         loss=loss,
         metrics=['accuracy'])
 
@@ -127,7 +127,7 @@ epochs = 50
 batch_size = 128
 # Codalab Gender
 top_model_weights_path = 'codalab/224_224/model/gender/vgg16/checkpoint/improved-191-0.82.hdf5'
-for i in list(range(1, 3)):
+for i in list(range(1, 2)):
     finetune(
         i,
         top_model_weights_path,
@@ -143,7 +143,7 @@ for i in list(range(1, 3)):
 
 # Codalab Smile
 top_model_weights_path = 'codalab/224_224/model/smile/vgg16/checkpoint/improved-190-0.74.hdf5'
-for i in list(range(1, 3)):
+for i in list(range(1, 2)):
     finetune(
         i,
         top_model_weights_path,
