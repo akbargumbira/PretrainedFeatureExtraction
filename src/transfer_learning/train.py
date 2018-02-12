@@ -131,6 +131,109 @@ def get_model(n_classes, version=3):
 
         model.add(Flatten())
         model.add(Dense(n_classes, name='fc4', activation='softmax'))
+    elif version == 41:
+        model.add(
+            Conv2D(32, (3, 3),
+                   name='conv1',
+                   padding='same',
+                   activation='relu',
+                   input_shape=(32, 32, 3)))
+        model.add(MaxPooling2D((2, 2), name='pool1'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(32, (3, 3),
+                         name='conv2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool2'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(64, (3, 3),
+                         name='conv3_1',
+                         padding='same',
+                         activation='relu'))
+        model.add(Conv2D(128, (3, 3),
+                         name='conv3_2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((4, 4), name='pool3'))
+        model.add(Dropout(0.3))
+
+        # Subject to compare
+        model.add(Conv2D(128, (2, 2),
+                         name='conv5',
+                         padding='same',
+                         activation='relu'))
+        model.add(Conv2D(128, (2, 2),
+                         name='conv6',
+                         padding='same',
+                         use_bias=False,
+                         activation='relu'))
+        model.add(Flatten())
+        model.add(Dense(n_classes, name='fc_last', activation='softmax'))
+    elif version == 42:
+        model.add(
+            Conv2D(32, (3, 3),
+                   name='conv1',
+                   padding='same',
+                   activation='relu',
+                   input_shape=(32, 32, 3)))
+        model.add(MaxPooling2D((2, 2), name='pool1'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(32, (3, 3),
+                         name='conv2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool2'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(64, (3, 3),
+                         name='conv3_1',
+                         padding='same',
+                         activation='relu'))
+        model.add(Conv2D(128, (3, 3),
+                         name='conv3_2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool3'))
+        model.add(Dropout(0.3))
+
+        # Subject to compare
+        model.add(Conv2D(128, (2, 2),
+                         name='conv5',
+                         padding='same',
+                         activation='relu'))
+        model.add(Flatten())
+        model.add(Dense(4*128, activation='relu', name='fc4', use_bias=False))
+        model.add(Dense(n_classes, name='fc_last', activation='softmax'))
+    elif version == 43:
+        model.add(
+            Conv2D(32, (3, 3),
+                   name='conv1',
+                   padding='same',
+                   activation='relu',
+                   input_shape=(32, 32, 3)))
+        model.add(MaxPooling2D((2, 2), name='pool1'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(32, (3, 3),
+                         name='conv2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool2'))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(64, (3, 3),
+                         name='conv3_1',
+                         padding='same',
+                         activation='relu'))
+        model.add(Conv2D(128, (3, 3),
+                         name='conv3_2',
+                         padding='same',
+                         activation='relu'))
+        model.add(MaxPooling2D((2, 2), name='pool3'))
+        model.add(Dropout(0.3))
 
     return model
 

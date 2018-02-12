@@ -36,9 +36,11 @@ def get_prepared_model(n_classes, n_last, top_model_weights_path):
 
     loss = 'categorical_crossentropy' if n_classes > 2 else \
         'binary_crossentropy'
-    # Train with 1/1000 * default's SGD lr
+    # Train small LR - default's SGD lr (0.01)
+    # lr = 0.000005
     full_model.compile(
-        optimizer=SGD(lr=0.000001),
+        optimizer=SGD(lr=0.00001, decay=1e-6, momentum=0.6, nesterov=True),
+        # optimizer=SGD(lr=0.00001, decay=1e-6, momentum=0.6, nesterov=True),
         loss=loss,
         metrics=['accuracy'])
 
@@ -123,8 +125,8 @@ def finetune(n_last,
     model.save_weights(last_filepath)
 
 
-epochs = 50
-batch_size = 128
+epochs = 200
+batch_size = 64
 # Codalab Gender
 top_model_weights_path = 'codalab/224_224/model/gender/vgg16/checkpoint/improved-191-0.82.hdf5'
 for i in list(range(1, 2)):
