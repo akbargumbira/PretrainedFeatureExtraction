@@ -1,6 +1,7 @@
 # coding=utf-8
 import numpy as np
 from keras import applications
+from keras.models import Model
 
 from src.utilities import load_dataset, data_path
 
@@ -32,7 +33,48 @@ def generate_bottleneck_features(output_dir, model='vgg16', prefix='training'):
     np.savez_compressed(open(path, 'w'), bottleneck_features)
 
 
-models = ['vgg16', 'inceptionv3', 'resnet50']
+def generate_vgg16_cnn_codes(output_dir, prefix='training'):
+    # Load dataset
+    output_path = data_path(output_dir)
+    t_data = load_dataset(output_path, prefix=prefix, data_only=True)
+
+    # Preprocess training_data and get the bottleneck features
+    net_model = applications.VGG16(weights='imagenet', include_top=False)
+    t_data = applications.vgg16.preprocess_input(t_data)
+
+    # Extract intermediate feature maps
+    layer_name_1 = 'block5_conv3'
+    layer_name_2 = 'block5_conv2'
+    layer_name_3 = 'block5_conv1'
+
+    # Intermediate output 1
+    intermediate_layer_model_1 = Model(inputs=net_model.input,
+                                     outputs=net_model.get_layer(layer_name_1).output)
+    intermediate_output_1 = intermediate_layer_model_1.predict(t_data)
+
+    # Intermediate output 2
+    intermediate_layer_model_2 = Model(inputs=net_model.input,
+                                       outputs=net_model.get_layer(
+                                           layer_name_2).output)
+    intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
+
+    # Intermediate output 3
+    intermediate_layer_model_3 = Model(inputs=net_model.input,
+                                       outputs=net_model.get_layer(
+                                           layer_name_3).output)
+    intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
+    print('test')
+
+
+# Codalab Validation
+generate_vgg16_cnn_codes(
+    output_dir='codalab/224_224/',
+    prefix='val'
+)
+
+
+
+# models = ['vgg16', 'inceptionv3', 'resnet50']
 # # UIUC
 # for model in models:
 #     generate_bottleneck_features(
