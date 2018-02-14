@@ -30,7 +30,7 @@ def generate_bottleneck_features(output_dir, model='vgg16', prefix='training'):
 
     # Save the bottleneck features
     path = data_path(output_dir, 'features_%s_%s.npz' % (prefix, model))
-    np.savez_compressed(open(path, 'w'), bottleneck_features)
+    np.savez_compressed(path, bottleneck_features)
 
 
 def generate_vgg16_cnn_codes(output_dir, prefix='training'):
@@ -52,17 +52,20 @@ def generate_vgg16_cnn_codes(output_dir, prefix='training'):
                                      outputs=net_model.get_layer(layer_name_1).output)
     intermediate_output_1 = intermediate_layer_model_1.predict(t_data)
 
-    # Intermediate output 2
-    intermediate_layer_model_2 = Model(inputs=net_model.input,
-                                       outputs=net_model.get_layer(
-                                           layer_name_2).output)
-    intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
-
-    # Intermediate output 3
-    intermediate_layer_model_3 = Model(inputs=net_model.input,
-                                       outputs=net_model.get_layer(
-                                           layer_name_3).output)
-    intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
+    # Save the CNN codes
+    path = data_path(output_dir, 'cnn_vgg_last_1_%s.npz' % prefix)
+    np.savez_compressed(path, intermediate_output_1)
+    # # Intermediate output 2
+    # intermediate_layer_model_2 = Model(inputs=net_model.input,
+    #                                    outputs=net_model.get_layer(
+    #                                        layer_name_2).output)
+    # intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
+    #
+    # # Intermediate output 3
+    # intermediate_layer_model_3 = Model(inputs=net_model.input,
+    #                                    outputs=net_model.get_layer(
+    #                                        layer_name_3).output)
+    # intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
     print('test')
 
 
@@ -99,10 +102,10 @@ generate_vgg16_cnn_codes(
 #         prefix='val'
 #     )
 # -------------------------------------
-# Kaggle Dog and Cat
-for model in models:
-    generate_bottleneck_features(
-        output_dir='kaggle_dog_cat/224_224',
-        model=model,
-        prefix='training'
-    )
+# # Kaggle Dog and Cat
+# for model in models:
+#     generate_bottleneck_features(
+#         output_dir='kaggle_dog_cat/224_224',
+#         model=model,
+#         prefix='training'
+#     )
