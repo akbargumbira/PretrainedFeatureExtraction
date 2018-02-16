@@ -5,6 +5,7 @@ import time
 import numpy as np
 from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
+from keras.optimizers import RMSprop
 from sklearn.model_selection import train_test_split
 
 from src.utilities import data_path, serialize_object, get_top_model, \
@@ -23,7 +24,7 @@ def train(training_features_path, training_label_path, output_dir,
 
     n_classes = len(np.unique(training_label))
     assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
-    if n_classes > 2:
+    if n_classes >= 2:
         # OHE training label
         training_label = to_categorical(training_label, n_classes)
 
@@ -44,7 +45,7 @@ def train(training_features_path, training_label_path, output_dir,
     if previous_model:
         model.load_weights(previous_model)
 
-    loss = 'categorical_crossentropy' if n_classes > 2 else \
+    loss = 'categorical_crossentropy' if n_classes >= 2 else \
         'binary_crossentropy'
     model.compile(optimizer='rmsprop',
                   loss=loss,
@@ -94,16 +95,16 @@ def train(training_features_path, training_label_path, output_dir,
 
 
 # Kaggle Dog and Cat
-# models = ['vgg16', 'inceptionv3', 'resnet50']
-# for model in models:
-#     print('Training with %s....' % model)
-#     train(
-#         training_features_path='kaggle_dog_cat/224_224/features_training_%s'
-#                                '.npz' % model,
-#         training_label_path='kaggle_dog_cat/224_224/training_label.npz',
-#         output_dir='kaggle_dog_cat/224_224/model/%s/' % model,
-#         checkpoint=True,
-#         epochs=200)
+models = ['vgg16', 'inceptionv3', 'resnet50']
+for model in models:
+    print('Training with %s....' % model)
+    train(
+        training_features_path='kaggle_dog_cat/224_224/features_training_%s'
+                               '.npz' % model,
+        training_label_path='kaggle_dog_cat/224_224/training_label.npz',
+        output_dir='kaggle_dog_cat/224_224/model/%s/' % model,
+        checkpoint=True,
+        epochs=200)
 
 # # ----------------------------------------------------------------------
 # # UIUC
@@ -135,17 +136,55 @@ def train(training_features_path, training_label_path, output_dir,
 #     )
 
 # # Codalab Smile
-models = ['vgg16', 'inceptionv3', 'resnet50']
-for model in models:
-    print('Training with %s....' % model)
-    train(
-        training_features_path='codalab/224_224/features_training_%s.npz' %
-                               model,
-        training_label_path='codalab/224_224/training_smile_label.npz',
-        output_dir='codalab/224_224/model/smile/%s/' % model,
-        epochs=200,
-        checkpoint=True,
-        val_features_path='codalab/224_224/features_val_%s.npz' % model,
-        val_label_path='codalab/224_224/val_smile_label.npz'
-    )
+# models = ['vgg16', 'inceptionv3', 'resnet50']
+# for model in models:
+#     print('Training with %s....' % model)
+#     train(
+#         training_features_path='codalab/224_224/features_training_%s.npz' %
+#                                model,
+#         training_label_path='codalab/224_224/training_smile_label.npz',
+#         output_dir='codalab/224_224/model/smile/%s/' % model,
+#         epochs=200,
+#         checkpoint=True,
+#         val_features_path='codalab/224_224/features_val_%s.npz' % model,
+#         val_label_path='codalab/224_224/val_smile_label.npz'
+#     )
 
+# --------------------------------------------------------------------------
+# # Codalab SMILE
+# last_n = [1, 2, 3]
+# for n in last_n:
+#     train(
+#         training_features_path='codalab/224_224/cnn_vgg_last_%s_training.npz' % n,
+#         training_label_path='codalab/224_224/training_smile_label.npz',
+#         output_dir='codalab/224_224/model/smile/vgg16/early/%s' % n,
+#         checkpoint=True,
+#         epochs=400,
+#         val_features_path='codalab/224_224/cnn_vgg_last_%s_val.npz' % n,
+#         val_label_path='codalab/224_224/val_smile_label.npz'
+#     )
+#
+#
+# # ---------------------------------------------------------------------------
+# # Codalab GENDER
+# # train(
+# #     training_features_path='codalab/224_224/cnn_vgg_last_1_training.npz',
+# #     training_label_path='codalab/224_224/training_gender_label.npz',
+# #     output_dir='codalab/224_224/model/gender/vgg16/early/1',
+# #     checkpoint=True,
+# #     epochs=400,
+# #     val_features_path='codalab/224_224/cnn_vgg_last_1_val.npz',
+# #     val_label_path='codalab/224_224/val_gender_label.npz'
+# # )
+#
+# last_n = [2, 3]
+# for n in last_n:
+#     train(
+#         training_features_path='codalab/224_224/cnn_vgg_last_%s_training.npz' % n,
+#         training_label_path='codalab/224_224/training_gender_label.npz',
+#         output_dir='codalab/224_224/model/gender/vgg16/early/%s' % n,
+#         checkpoint=True,
+#         epochs=400,
+#         val_features_path='codalab/224_224/cnn_vgg_last_%s_val.npz' % n,
+#         val_label_path='codalab/224_224/val_gender_label.npz'
+#     )

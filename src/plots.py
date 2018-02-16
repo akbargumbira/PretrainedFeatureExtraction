@@ -10,6 +10,7 @@ def plot_confusion_matrix(plt, cm, classes=None,
                           normalize=False,
                           title='Confusion matrix',
                           cmap=plt.cm.Blues,
+                          rotation=0,
                           verbose=False):
     """Print and plot the confusion matrix.
 
@@ -36,7 +37,7 @@ def plot_confusion_matrix(plt, cm, classes=None,
     if classes is None:
         classes = np.arange(cm.shape[0])
     tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=0)
+    plt.xticks(tick_marks, classes, rotation=rotation)
     plt.yticks(tick_marks, classes)
 
     if normalize:

@@ -346,7 +346,7 @@ def get_top_model(input_shape, n_classes):
     model.add(Dropout(0.5))
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
-    if n_classes > 2:
+    if n_classes >= 2:
         model.add(Dense(n_classes, activation='softmax'))
     else:
         model.add(Dense(1, activation='sigmoid'))

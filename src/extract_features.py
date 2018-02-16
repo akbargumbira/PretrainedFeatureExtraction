@@ -48,28 +48,37 @@ def generate_vgg16_cnn_codes(output_dir, prefix='training'):
     layer_name_3 = 'block5_conv1'
 
     # Intermediate output 1
-    intermediate_layer_model_1 = Model(inputs=net_model.input,
-                                     outputs=net_model.get_layer(layer_name_1).output)
-    intermediate_output_1 = intermediate_layer_model_1.predict(t_data)
-
-    # Save the CNN codes
-    path = data_path(output_dir, 'cnn_vgg_last_1_%s.npz' % prefix)
-    np.savez_compressed(path, intermediate_output_1)
-    # # Intermediate output 2
-    # intermediate_layer_model_2 = Model(inputs=net_model.input,
-    #                                    outputs=net_model.get_layer(
-    #                                        layer_name_2).output)
-    # intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
+    # intermediate_layer_model_1 = Model(inputs=net_model.input,
+    #                                  outputs=net_model.get_layer(layer_name_1).output)
+    # intermediate_output_1 = intermediate_layer_model_1.predict(t_data)
     #
-    # # Intermediate output 3
-    # intermediate_layer_model_3 = Model(inputs=net_model.input,
-    #                                    outputs=net_model.get_layer(
-    #                                        layer_name_3).output)
-    # intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
+    # # Save the CNN codes
+    # path = data_path(output_dir, 'cnn_vgg_last_1_%s.npz' % prefix)
+    # np.savez_compressed(path, intermediate_output_1)
+    # Intermediate output 2
+    intermediate_layer_model_2 = Model(inputs=net_model.input,
+                                       outputs=net_model.get_layer(
+                                           layer_name_2).output)
+    intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
+    path = data_path(output_dir, 'cnn_vgg_last_2_%s.npz' % prefix)
+    np.savez_compressed(path, intermediate_output_2)
+
+    # Intermediate output 3
+    intermediate_layer_model_3 = Model(inputs=net_model.input,
+                                       outputs=net_model.get_layer(
+                                           layer_name_3).output)
+    intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
+    path = data_path(output_dir, 'cnn_vgg_last_3_%s.npz' % prefix)
+    np.savez_compressed(path, intermediate_output_3)
     print('test')
 
 
 # Codalab Validation
+generate_vgg16_cnn_codes(
+    output_dir='codalab/224_224/',
+    prefix='training'
+)
+
 generate_vgg16_cnn_codes(
     output_dir='codalab/224_224/',
     prefix='val'
