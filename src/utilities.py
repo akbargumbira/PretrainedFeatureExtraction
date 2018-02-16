@@ -29,6 +29,21 @@ UIUC_EVENT_CLASS = {
     'snowboarding': 7
 }
 
+CODALAB_GENDER_CLASS = {
+    0: 'Male',
+    1: 'Female',
+    2: 'Unknown'
+}
+
+CODALAB_SMILE_CLASS = {
+    0: 'Not smiling',
+    1: 'Smiling'
+}
+
+KAGGLE_DOGCAT_CLASS = {
+    0: 'Cat',
+    1: 'Dog'
+}
 
 def get_uiuc_training_data(image_dir, target_size):
     """Get UIUC training data and its label.
