@@ -154,27 +154,29 @@ def train(training_features_path, training_label_path, output_dir,
 
 # --------------------------------------------------------------------------
 # Codalab SMILE
-last_n = [1, 2, 3]
-for n in last_n:
-    train(
-        training_features_path='codalab/224_224/cnn_vgg_last_%s_training.npz' % n,
-        training_label_path='codalab/224_224/training_smile_label.npz',
-        output_dir='codalab/224_224/model/smile/vgg16/early/%s' % n,
-        checkpoint=True,
-        epochs=200,
-        val_features_path='codalab/224_224/cnn_vgg_last_%s_val.npz' % n,
-        val_label_path='codalab/224_224/val_smile_label.npz'
-    )
+# last_n = [2, 3]
+# for n in last_n:
+#     train(
+#         training_features_path='codalab/224_224/cnn_vgg_last_%s_training.npz' % n,
+#         training_label_path='codalab/224_224/training_smile_label.npz',
+#         output_dir='codalab/224_224/model/smile/vgg16/early/%s' % n,
+#         checkpoint=True,
+#         epochs=200,
+#         val_features_path='codalab/224_224/cnn_vgg_last_%s_val.npz' % n,
+#         val_label_path='codalab/224_224/val_smile_label.npz'
+#     )
 
 
 # ---------------------------------------------------------------------------
 # Codalab GENDER
-train(
-    training_features_path='codalab/224_224/cnn_vgg_last_1_training.npz',
-    training_label_path='codalab/224_224/training_gender_label.npz',
-    output_dir='codalab/224_224/model/gender/vgg16/early/1',
-    checkpoint=True,
-    epochs=200,
-    val_features_path='codalab/224_224/cnn_vgg_last_1_val.npz',
-    val_label_path='codalab/224_224/val_gender_label.npz'
-)
+# last_n = [2, 3]
+# for n in last_n:
+#     train(
+#         training_features_path='codalab/224_224/cnn_vgg_last_%s_training.npz' % n,
+#         training_label_path='codalab/224_224/training_gender_label.npz',
+#         output_dir='codalab/224_224/model/gender/vgg16/early/%s' % n,
+#         checkpoint=True,
+#         epochs=200,
+#         val_features_path='codalab/224_224/cnn_vgg_last_%s_val.npz' % n,
+#         val_label_path='codalab/224_224/val_gender_label.npz'
+#     )
