@@ -34,12 +34,13 @@ def get_prepared_model(n_classes, n_last, top_model_weights_path):
     for layer in full_model.layers[:starting_finetuned_idx]:
         layer.trainable = False
 
-    loss = 'categorical_crossentropy' if n_classes > 2 else \
+    loss = 'categorical_crossentropy' if n_classes >= 2 else \
         'binary_crossentropy'
     # Train small LR - default's SGD lr (0.01)
     # lr = 0.000005
     full_model.compile(
-        optimizer=SGD(lr=0.00001, decay=1e-6, momentum=0.6, nesterov=True),
+        optimizer=SGD(lr=0.0001, decay=1e-6, momentum=0.6, nesterov=True),
+        # optimizer=SGD(lr=0.00001, decay=1e-6, momentum=0.6, nesterov=True),
         # optimizer=SGD(lr=0.00001, decay=1e-6, momentum=0.6, nesterov=True),
         loss=loss,
         metrics=['accuracy'])
@@ -63,7 +64,7 @@ def finetune(n_last,
 
     n_classes = len(np.unique(t_label))
     assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
-    if n_classes > 2:
+    if n_classes >= 2:
         # OHE training label
         t_label = to_categorical(t_label, n_classes)
 
@@ -72,7 +73,7 @@ def finetune(n_last,
         val_data = load_dataset_from_path(val_data_path)
         val_label = load_dataset_from_path(val_label_path)
         val_data = applications.vgg16.preprocess_input(val_data)
-        if n_classes > 2:
+        if n_classes >= 2:
             val_label = to_categorical(val_label, n_classes)
     else:
         # Split training data into train and validation set
@@ -125,10 +126,10 @@ def finetune(n_last,
     model.save_weights(last_filepath)
 
 
-epochs = 200
-batch_size = 64
+epochs = 100
+batch_size = 128
 # Codalab Gender
-top_model_weights_path = 'codalab/224_224/model/gender/vgg16/checkpoint/improved-191-0.82.hdf5'
+top_model_weights_path = 'codalab/224_224/model/gender/vgg16/checkpoint/improved-034-0.83.hdf5'
 for i in list(range(1, 2)):
     finetune(
         i,
@@ -143,18 +144,18 @@ for i in list(range(1, 2)):
         batch_size=batch_size,
     )
 
-# Codalab Smile
-top_model_weights_path = 'codalab/224_224/model/smile/vgg16/checkpoint/improved-190-0.74.hdf5'
-for i in list(range(1, 2)):
-    finetune(
-        i,
-        top_model_weights_path,
-        output_dir='codalab/224_224/model/smile/vgg16/ft/%s' % i,
-        train_data_path='codalab/224_224/training_data.npz',
-        train_label_path='codalab/224_224/training_smile_label.npz',
-        val_data_path='codalab/224_224/val_data.npz',
-        val_label_path='codalab/224_224/val_smile_label.npz',
-        checkpoint=True,
-        epochs=epochs,
-        batch_size=batch_size,
-    )
+# # Codalab Smile
+# top_model_weights_path = 'codalab/224_224/model/smile/vgg16/checkpoint/improved-190-0.74.hdf5'
+# for i in list(range(1, 2)):
+#     finetune(
+#         i,
+#         top_model_weights_path,
+#         output_dir='codalab/224_224/model/smile/vgg16/ft/%s' % i,
+#         train_data_path='codalab/224_224/training_data.npz',
+#         train_label_path='codalab/224_224/training_smile_label.npz',
+#         val_data_path='codalab/224_224/val_data.npz',
+#         val_label_path='codalab/224_224/val_smile_label.npz',
+#         checkpoint=True,
+#         epochs=epochs,
+#         batch_size=batch_size,
+#     )

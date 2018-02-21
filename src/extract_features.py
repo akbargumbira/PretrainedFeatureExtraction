@@ -43,9 +43,10 @@ def generate_vgg16_cnn_codes(output_dir, prefix='training'):
     t_data = applications.vgg16.preprocess_input(t_data)
 
     # Extract intermediate feature maps
-    layer_name_1 = 'block5_conv3'
-    layer_name_2 = 'block5_conv2'
-    layer_name_3 = 'block5_conv1'
+    # layer_name_1 = 'block5_conv3'
+    # layer_name_2 = 'block5_conv2'
+    # layer_name_3 = 'block5_conv1'
+    layer_name_4 = 'block4_pool'
 
     # Intermediate output 1
     # intermediate_layer_model_1 = Model(inputs=net_model.input,
@@ -56,20 +57,28 @@ def generate_vgg16_cnn_codes(output_dir, prefix='training'):
     # path = data_path(output_dir, 'cnn_vgg_last_1_%s.npz' % prefix)
     # np.savez_compressed(path, intermediate_output_1)
     # Intermediate output 2
-    intermediate_layer_model_2 = Model(inputs=net_model.input,
-                                       outputs=net_model.get_layer(
-                                           layer_name_2).output)
-    intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
-    path = data_path(output_dir, 'cnn_vgg_last_2_%s.npz' % prefix)
-    np.savez_compressed(path, intermediate_output_2)
+    # intermediate_layer_model_2 = Model(inputs=net_model.input,
+    #                                    outputs=net_model.get_layer(
+    #                                        layer_name_2).output)
+    # intermediate_output_2 = intermediate_layer_model_2.predict(t_data)
+    # path = data_path(output_dir, 'cnn_vgg_last_2_%s.npz' % prefix)
+    # np.savez_compressed(path, intermediate_output_2)
+    #
+    # # Intermediate output 3
+    # intermediate_layer_model_3 = Model(inputs=net_model.input,
+    #                                    outputs=net_model.get_layer(
+    #                                        layer_name_3).output)
+    # intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
+    # path = data_path(output_dir, 'cnn_vgg_last_3_%s.npz' % prefix)
+    # np.savez_compressed(path, intermediate_output_3)
 
-    # Intermediate output 3
-    intermediate_layer_model_3 = Model(inputs=net_model.input,
+    # Intermediate output 4
+    intermediate_layer_model_4 = Model(inputs=net_model.input,
                                        outputs=net_model.get_layer(
-                                           layer_name_3).output)
-    intermediate_output_3 = intermediate_layer_model_3.predict(t_data)
-    path = data_path(output_dir, 'cnn_vgg_last_3_%s.npz' % prefix)
-    np.savez_compressed(path, intermediate_output_3)
+                                           layer_name_4).output)
+    intermediate_output_4 = intermediate_layer_model_4.predict(t_data)
+    path = data_path(output_dir, 'cnn_vgg_last_4_%s.npz' % prefix)
+    np.savez_compressed(path, intermediate_output_4)
     print('test')
 
 
