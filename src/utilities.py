@@ -346,11 +346,11 @@ def get_top_model(input_shape, n_classes):
                     activation='relu',
                     kernel_initializer='RandomNormal',
                     bias_initializer='RandomNormal',
-                    kernel_regularizer=regularizers.l2(0.2)))
+                    kernel_regularizer=regularizers.l2(0.1)))
     model.add(Dropout(0.5))
     model.add(Dense(128, activation='relu',
                     kernel_initializer='RandomNormal',
-                    kernel_regularizer=regularizers.l2(0.2)))
+                    kernel_regularizer=regularizers.l2(0.1)))
     model.add(Dropout(0.5))
     if n_classes >= 2:
         model.add(Dense(n_classes, activation='softmax'))
