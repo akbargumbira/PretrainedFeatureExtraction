@@ -5,7 +5,7 @@ import pickle
 
 import h5py
 import numpy as np
-from keras import applications
+from keras import applications, regularizers
 from keras.models import Sequential, Model
 from keras.preprocessing import image as keras_image
 from keras.layers import Dropout, Flatten, Dense, Input
@@ -342,9 +342,15 @@ def get_top_model(input_shape, n_classes):
     assert n_classes >= 2, 'n_classes should be >= 2, got %s' % n_classes
     model = Sequential()
     model.add(Flatten(input_shape=input_shape))
-    model.add(Dense(256, activation='relu'))
+    model.add(Dense(256,
+                    activation='relu',
+                    kernel_initializer='RandomNormal',
+                    bias_initializer='RandomNormal',
+                    kernel_regularizer=regularizers.l2(0.2)))
     model.add(Dropout(0.5))
-    model.add(Dense(128, activation='relu'))
+    model.add(Dense(128, activation='relu',
+                    kernel_initializer='RandomNormal',
+                    kernel_regularizer=regularizers.l2(0.2)))
     model.add(Dropout(0.5))
     if n_classes >= 2:
         model.add(Dense(n_classes, activation='softmax'))
